@@ -26,7 +26,7 @@ public class UserController {
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
         log.trace("Create user: {}", user);
-        if (user.getName() == null || user.getName().isEmpty()) {
+        if (user.getName() == null) {
             log.info("Name null ? -> Name = login");
             user.setName(user.getLogin());
         }
@@ -43,17 +43,12 @@ public class UserController {
             log.warn("Id can not be null");
             throw new ValidationException("User id is null");
         }
-        if (users.containsKey(user.getId())) {
-            User olduser = users.get(user.getId());
-            olduser.setName(user.getName());
-            olduser.setBirthday(user.getBirthday());
-            olduser.setLogin(user.getLogin());
-            olduser.setEmail(user.getEmail());
-            log.info("Updated user: {}", olduser);
-            return olduser;
+        if (users.get(user.getId()) == null) {
+            log.info("User not found");
+            throw new ValidationException("User not found");
         }
-        log.warn("User not found");
-        throw new ValidationException("User not found");
+        users.put(user.getId(), user);
+        return user;
     }
 
     private long getNextId() {

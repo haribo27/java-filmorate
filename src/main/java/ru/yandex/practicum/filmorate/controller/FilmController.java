@@ -45,17 +45,12 @@ public class FilmController {
             log.warn("ID can not be null");
             throw new ValidationException("Film id is null");
         }
-        if (films.containsKey(film.getId())) {
-            Film oldFilm = films.get(film.getId());
-            oldFilm.setName(film.getName());
-            oldFilm.setDescription(film.getDescription());
-            oldFilm.setReleaseDate(film.getReleaseDate());
-            oldFilm.setDuration(film.getDuration());
-            log.info("Updated film: {}", oldFilm);
-            return oldFilm;
+        if (films.get(film.getId()) == null) {
+            log.info("Film not found");
+            throw new ValidationException("Film not found");
         }
-        log.warn("Film not found");
-        throw new ValidationException("Film not found");
+        films.put(film.getId(), film);
+        return film;
     }
 
     private long getNextId() {
