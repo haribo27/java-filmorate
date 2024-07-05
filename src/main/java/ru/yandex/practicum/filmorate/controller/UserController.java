@@ -44,10 +44,11 @@ public class UserController {
             throw new ValidationException("User id is null");
         }
         if (users.get(user.getId()) == null) {
-            log.info("User not found");
+            log.warn("User not found");
             throw new ValidationException("User not found");
         }
         users.put(user.getId(), user);
+        log.info("Found updated user: {}", user);
         return user;
     }
 

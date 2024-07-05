@@ -46,10 +46,11 @@ public class FilmController {
             throw new ValidationException("Film id is null");
         }
         if (films.get(film.getId()) == null) {
-            log.info("Film not found");
+            log.warn("Film not found");
             throw new ValidationException("Film not found");
         }
         films.put(film.getId(), film);
+        log.info("Film updated: {}", film);
         return film;
     }
 
