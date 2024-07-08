@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
@@ -8,13 +9,14 @@ import ru.yandex.practicum.filmorate.controller.UserController;
 @SpringBootTest
 class FilmorateApplicationTests {
 
+    @Autowired
     FilmController filmController;
+    @Autowired
     UserController userController;
 
     @BeforeEach
     void createControllers() {
-        filmController = new FilmController();
-        userController = new UserController();
+
     }
 
     /*@Test

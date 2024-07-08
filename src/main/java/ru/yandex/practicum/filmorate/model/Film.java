@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.validator.NotBeforeDate;
 
 
 import java.time.LocalDate;
+import java.util.Set;
 
 
 @Data
@@ -20,4 +21,5 @@ public class Film {
     private LocalDate releaseDate;
     @Positive
     private int duration;
+    private Set<Long> likes;
 }

@@ -9,10 +9,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Constraint(validatedBy = NotBeforeDateValidator.class)
-@Target({ ElementType.FIELD})
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NotBeforeDate {
     String message() default "Date must not be before December 28, 1895";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

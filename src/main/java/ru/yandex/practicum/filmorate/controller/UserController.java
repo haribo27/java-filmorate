@@ -3,62 +3,66 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
 
-    Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public Collection<User> getAllUsers() {
-        log.info("Get all users");
-        return users.values();
+        return userService.getAllUsers();
+    }
+
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable long id) {
+        return userService.getUser(id);
+    }
+
+    @GetMapping("/{userId}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable long userId, @PathVariable long otherId) {
+        return userService.getCommonFriends(userId, otherId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getUserFriends(@PathVariable long id) {
+        return userService.getUserFriends(id);
     }
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
-        log.trace("Create user: {}", user);
-        if (user.getName() == null) {
-            log.info("Name null ? -> Name = login");
-            user.setName(user.getLogin());
-        }
-        user.setId(getNextId());
-        users.put(user.getId(), user);
-        log.info("Created new user: {}", user);
+        userService.createUser(user);
         return user;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        log.trace("Update user: {}", user);
-        if (user.getId() == null) {
-            log.warn("Id can not be null");
-            throw new ValidationException("User id is null");
-        }
-        if (users.get(user.getId()) == null) {
-            log.warn("User not found");
-            throw new ValidationException("User not found");
-        }
-        users.put(user.getId(), user);
-        log.info("Found updated user: {}", user);
+        userService.updateUser(user);
         return user;
     }
 
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        log.trace("Current maxId: {}", currentMaxId);
-        return ++currentMaxId;
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable long id, @PathVariable long friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable long id) {
+        userService.deleteUser(id);
+    }
+
+    @DeleteMapping("/{userId}/friends/{friendId}")
+    public void deleteFriend(@PathVariable long userId, @PathVariable() long friendId) {
+        userService.deleteFriend(userId, friendId);
     }
 }
