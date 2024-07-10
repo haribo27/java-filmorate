@@ -5,15 +5,19 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users = new HashMap<>();
+    private long currentMaxId = 1;
 
     @Override
     public void createUser(User user) {
+        user.setId(getNextId());
         users.put(user.getId(), user);
     }
 
@@ -28,11 +32,16 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> getAllUsers() {
-        return users.values();
+    public Optional<User> getUser(long id) {
+        return Optional.ofNullable(users.get(id));
     }
 
-    public Map<Long, User> getUsers() {
-        return Map.copyOf(users);
+    @Override
+    public Collection<User> getAllUsers() {
+        return List.copyOf(users.values());
+    }
+
+    private long getNextId() {
+        return currentMaxId++;
     }
 }

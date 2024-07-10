@@ -11,11 +11,14 @@ public class User {
 
     private Long id;
     @Email
+    @NotEmpty
     private String email;
     @NotBlank
+    @Pattern(regexp = "^\\S*$")
     private String login;
     private String name;
     @PastOrPresent
+    @NotNull
     private LocalDate birthday;
     private Set<Long> friends;
 }

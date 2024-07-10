@@ -16,6 +16,7 @@ public class Film {
     @NotBlank
     private String name;
     @Size(min = 1, max = 200)
+    @NotBlank
     private String description;
     @NotBeforeDate
     private LocalDate releaseDate;
