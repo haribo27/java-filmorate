@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Data
-public class User {
+public class UserDto {
 
     private Long id;
     @Email

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.dal;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -15,19 +15,22 @@ public class InMemoryFilmStorage implements FilmStorage {
     private long currentMaxId = 1;
 
     @Override
-    public void createFilm(Film film) {
+    public Film createFilm(Film film) {
         film.setId(getNextId());
         films.put(film.getId(), film);
+        return film;
     }
 
     @Override
-    public void updateFilm(Film film) {
+    public Film updateFilm(Film film) {
         films.put(film.getId(), film);
+        return film;
     }
 
     @Override
-    public void deleteFilm(long id) {
+    public boolean deleteFilm(long id) {
         films.remove(id);
+        return true;
     }
 
     @Override

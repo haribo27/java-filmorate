@@ -14,13 +14,17 @@ public class Film {
 
     private Long id;
     @NotBlank
+    @NotNull
     private String name;
     @Size(min = 1, max = 200)
     @NotBlank
+    @NotNull
     private String description;
     @NotBeforeDate
     private LocalDate releaseDate;
     @Positive
     private int duration;
     private Set<Long> likes;
+    private String rating;
+    private Set<Long> genres;
 }

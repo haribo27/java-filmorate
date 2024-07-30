@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -7,16 +7,15 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Data
-public class User {
+public class NewUserRequest {
 
-    private Long id;
-    @Email
-    @NotEmpty
-    private String email;
-    private String name;
     @NotBlank
     @Pattern(regexp = "^\\S*$")
     private String login;
+    private String name;
+    @Email
+    @NotEmpty
+    private String email;
     @PastOrPresent
     @NotNull
     private LocalDate birthday;

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.dal;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
@@ -16,28 +16,30 @@ public class InMemoryUserStorage implements UserStorage {
     private long currentMaxId = 1;
 
     @Override
-    public void createUser(User user) {
+    public User save(User user) {
         user.setId(getNextId());
         users.put(user.getId(), user);
+        return user;
     }
 
     @Override
-    public void deleteUser(long id) {
-        users.remove(id);
+    public boolean deleteUser(long id) {
+        return true;
     }
 
     @Override
-    public void updateUser(User user) {
+    public User updateUser(User user) {
         users.put(user.getId(), user);
+        return user;
     }
 
     @Override
-    public Optional<User> getUser(long id) {
+    public Optional<User> findUserById(long id) {
         return Optional.ofNullable(users.get(id));
     }
 
     @Override
-    public Collection<User> getAllUsers() {
+    public List<User> getAllUsers() {
         return List.copyOf(users.values());
     }
 
