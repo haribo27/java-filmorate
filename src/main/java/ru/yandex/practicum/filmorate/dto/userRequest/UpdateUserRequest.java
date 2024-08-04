@@ -1,21 +1,16 @@
-package ru.yandex.practicum.filmorate.dto;
+package ru.yandex.practicum.filmorate.dto.userRequest;
 
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 @Data
 public class UpdateUserRequest {
 
     private long id;
-    @Email
     private String email;
     private String name;
-    @Pattern(regexp = "^\\S*$")
     private String login;
-    @PastOrPresent
     private LocalDate birthday;
 
     public boolean hasEmail() {
@@ -31,6 +26,6 @@ public class UpdateUserRequest {
     }
 
     public boolean hasLogin() {
-        return login.isBlank()  || login.isEmpty();
+        return login.isBlank() || login.isEmpty();
     }
 }

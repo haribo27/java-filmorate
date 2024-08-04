@@ -1,15 +1,15 @@
-package ru.yandex.practicum.filmorate.dal;
+package ru.yandex.practicum.filmorate.dal.old;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Component
+/*@Component
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users = new HashMap<>();
@@ -23,8 +23,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public boolean deleteUser(long id) {
-        return true;
+    public void deleteUser(long id) {
     }
 
     @Override
@@ -46,4 +45,4 @@ public class InMemoryUserStorage implements UserStorage {
     private long getNextId() {
         return currentMaxId++;
     }
-}
+}*/

@@ -1,0 +1,24 @@
+/*
+INSERT INTO GENRE (NAME)
+VALUES('Комедия');
+INSERT INTO GENRE (NAME)
+VALUES('Драма');
+INSERT INTO GENRE (NAME)
+VALUES('Мультфильм');
+INSERT INTO GENRE (NAME)
+VALUES('Триллер');
+INSERT INTO GENRE (NAME)
+VALUES('Документальный');
+INSERT INTO GENRE (NAME)
+VALUES('Боевик');
+
+INSERT INTO rating (name)
+VALUES('G');
+INSERT INTO rating (name)
+VALUES('PG');
+INSERT INTO rating (name)
+VALUES('PG-13');
+INSERT INTO rating (name)
+VALUES('R');
+INSERT INTO rating (name)
+VALUES('NC-17'); */

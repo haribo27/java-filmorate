@@ -4,10 +4,9 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.dto.NewUserRequest;
-import ru.yandex.practicum.filmorate.dto.UpdateUserRequest;
+import ru.yandex.practicum.filmorate.dto.userRequest.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.userRequest.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.UserDto;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -44,16 +43,16 @@ public class UserController {
 
     @PutMapping
     public UserDto updateUser(@RequestBody UpdateUserRequest request) {
-       return userService.updateUser(request);
+        return userService.updateUser(request);
     }
 
-   /* @GetMapping("/{userId}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable long userId, @PathVariable long otherId) {
+    @GetMapping("/{userId}/friends/common/{otherId}")
+    public List<UserDto> getCommonFriends(@PathVariable long userId, @PathVariable long otherId) {
         return userService.getCommonFriends(userId, otherId);
-    }*/
+    }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getUserFriends(@PathVariable long id) {
+    public Collection<UserDto> getUserFriends(@PathVariable("id") long id) {
         return userService.getUserFriends(id);
     }
 
@@ -67,8 +66,9 @@ public class UserController {
         userService.deleteUser(id);
     }
 
-  /*  @DeleteMapping("/{userId}/friends/{friendId}")
+    @DeleteMapping("/{userId}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.OK)
     public void deleteFriend(@PathVariable long userId, @PathVariable() long friendId) {
         userService.deleteFriend(userId, friendId);
-    }*/
+    }
 }

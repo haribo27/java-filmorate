@@ -1,6 +1,7 @@
-package ru.yandex.practicum.filmorate.dal;
+package ru.yandex.practicum.filmorate.dal.old;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.HashMap;
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Component
+/*@Component
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
@@ -22,15 +23,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film updateFilm(Film film) {
+    public void updateFilm(Film film) {
         films.put(film.getId(), film);
-        return film;
     }
 
     @Override
-    public boolean deleteFilm(long id) {
+    public void deleteFilm(long id) {
         films.remove(id);
-        return true;
     }
 
     @Override
@@ -46,4 +45,4 @@ public class InMemoryFilmStorage implements FilmStorage {
     public long getNextId() {
         return currentMaxId++;
     }
-}
+}*/
