@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/*@Component
+@Component
 public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
@@ -38,11 +38,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> getFilm(long id) {
-        return Optional.ofNullable(films.get(id));
+    public Optional<Film> findById(long id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public void addFilmLike(long userId, long filmId) {
+
+    }
+
+    @Override
+    public void deleteLike(long userId, long filmId) {
+
     }
 
     public long getNextId() {
         return currentMaxId++;
     }
-}*/
+}
