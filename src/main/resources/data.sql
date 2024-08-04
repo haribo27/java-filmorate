@@ -1,4 +1,4 @@
-/*
+
 INSERT INTO GENRE (NAME)
 VALUES('Комедия');
 INSERT INTO GENRE (NAME)
@@ -21,4 +21,4 @@ VALUES('PG-13');
 INSERT INTO rating (name)
 VALUES('R');
 INSERT INTO rating (name)
-VALUES('NC-17'); */
+VALUES('NC-17');
