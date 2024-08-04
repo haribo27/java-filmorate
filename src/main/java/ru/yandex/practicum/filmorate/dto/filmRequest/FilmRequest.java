@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.validator.NotBeforeDate;
 
 import java.time.LocalDate;
-import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Data
 public class FilmRequest {
@@ -27,7 +27,7 @@ public class FilmRequest {
     private LocalDate releaseDate;
     @Positive
     private Integer duration;
-    private LinkedHashSet<Genre> genres;
+    private Set<Genre> genres;
     private Mpa mpa;
 
     public boolean hasName() {

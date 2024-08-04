@@ -66,9 +66,9 @@ public class FilmService {
     }
 
     public FilmDto getFilm(long id) {
-        log.trace("Getting film with id: {}", id);
         Film film = filmRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Фильма с таким id не существует"));
+        log.info("Getting film : {}", film);
         return FilmMapper.mapToFilmDto(film);
     }
 

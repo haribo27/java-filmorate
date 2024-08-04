@@ -25,10 +25,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 g.name AS film_genre_name,
                 fi.user_id AS liked_by_user_id
             FROM films AS u
-            JOIN FILM_GENRE AS fg ON u.id = fg.film_id
-            JOIN genre AS g ON fg.genre_id = g.id
+            LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
+            LEFT JOIN genre AS g ON fg.genre_id = g.id
             LEFT JOIN FILM_LIKES AS fi ON u.id = fi.film_id
-            JOIN rating AS r ON u.rating = r.id
+            LEFT JOIN rating AS r ON u.rating = r.id
             """;
     private static final String FIND_BY_ID_QUERY = FIND_ALL_QUERY +
             "WHERE u.id = ?";
@@ -59,7 +59,9 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 film.getDuration(),
                 film.getMpa().getId()
         );
-        filmGenreRepository.saveGenre(id, film.getGenres());
+        if (film.getGenres() != null) {
+            filmGenreRepository.saveGenre(id, film.getGenres());
+        }
         film.setId(id);
         return film;
     }

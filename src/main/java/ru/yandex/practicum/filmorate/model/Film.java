@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.validator.NotBeforeDate;
 
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Set;
 
 
 @Data
@@ -25,7 +25,7 @@ public class Film {
     private LocalDate releaseDate;
     @Positive
     private int duration;
-    private LinkedHashSet<Genre> genres;
+    private Set<Genre> genres;
     private Mpa mpa;
     private HashSet<Long> likes;
 }

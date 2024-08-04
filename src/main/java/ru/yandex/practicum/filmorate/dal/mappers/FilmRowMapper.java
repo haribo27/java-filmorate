@@ -8,7 +8,8 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class FilmRowMapper implements RowMapper<Film> {
@@ -26,12 +27,15 @@ public class FilmRowMapper implements RowMapper<Film> {
         mpa.setName(rs.getString("film_rating_name"));
         film.setMpa(mpa);
 
-        LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+        Set<Genre> genres = new HashSet<>();
         do {
-            Genre genre = new Genre();
-            genre.setId(rs.getLong("film_genre_id"));
-            genre.setName(rs.getString("film_genre_name"));
-            genres.add(genre);
+            long genreId = rs.getLong("film_genre_id");
+            if (genreId > 0) {
+                Genre genre = new Genre();
+                genre.setId(rs.getLong("film_genre_id"));
+                genre.setName(rs.getString("film_genre_name"));
+                genres.add(genre);
+            }
         } while (rs.next() && rs.getLong("film_id") == film.getId());
         film.setGenres(genres);
         return film;

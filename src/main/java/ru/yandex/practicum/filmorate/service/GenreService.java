@@ -4,12 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -33,11 +34,16 @@ public class GenreService {
         log.info("Get genre by id: {}", id);
         return genreRepository.getGenreById(id)
                 .map(GenreMapper::mapToGenreDto)
-                .orElseThrow(() -> new ValidationException("Жанра с таким id не существует"));
+                .orElseThrow(() -> new EntityNotFoundException("Жанра с таким id не существует"));
     }
 
-    public void isGenresExists(LinkedHashSet<Genre> genres) {
+    public void isGenresExists(Set<Genre> genres) {
+        if (genres == null) return;
         log.info("Check if genres exists: {}", genres);
-        genres.forEach(genre -> getGenreById(genre.getId()));
+        try {
+            genres.forEach(genre -> getGenreById(genre.getId()));
+        } catch (EntityNotFoundException e) {
+            throw new ValidationException("Жанра с таким айди не существует");
+        }
     }
 }
