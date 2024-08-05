@@ -3,13 +3,14 @@ package ru.yandex.practicum.filmorate.mapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.dto.*;
-import ru.yandex.practicum.filmorate.dto.filmRequest.FilmRequest;
+import ru.yandex.practicum.filmorate.dto.filmRequest.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.filmRequest.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilmMapper {
 
-    public static Film mapToFilm(FilmRequest request) {
+    public static Film mapToFilm(NewFilmRequest request) {
         Film film = new Film();
         film.setName(request.getName());
         film.setDescription(request.getDescription());
@@ -32,7 +33,7 @@ public class FilmMapper {
         return filmDto;
     }
 
-    public static Film updateFilmFields(Film film, FilmRequest request) {
+    public static Film updateFilmFields(Film film, UpdateFilmRequest request) {
         if (!request.hasName()) {
             film.setName(request.getName());
         }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmWithGenresAndLikesExtractor;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,12 +41,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private static final String INSERT_FILM_LIKE = "INSERT INTO FILM_LIKES (user_id, film_id) VALUES (?, ?)";
     private static final String DELETE_LIKE_FROM_FILM = "DELETE FROM FILM_LIKES WHERE user_id = ? AND film_id = ?";
 
-    private final FilmGenreRepository filmGenreRepository;
     private final JdbcTemplate jdbcTemplate;
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmGenreRepository filmGenreRepository, JdbcTemplate jdbcTemplate) {
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, JdbcTemplate jdbcTemplate) {
         super(jdbc, mapper);
-        this.filmGenreRepository = filmGenreRepository;
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -59,9 +58,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 film.getDuration(),
                 film.getMpa().getId()
         );
-        if (film.getGenres() != null) {
-            filmGenreRepository.saveGenre(id, film.getGenres());
-        }
         film.setId(id);
         return film;
     }
@@ -85,6 +81,15 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     public List<Film> getAllFilms() {
         return jdbcTemplate.query(FIND_ALL_QUERY, new FilmWithGenresAndLikesExtractor());
+    }
+
+    @Override
+    public List<Film> getPopularFilms(int count) {
+        return getAllFilms()
+                .stream()
+                .sorted(Comparator.comparingInt((Film o) -> o.getLikes().size()).reversed())
+                .limit(count)
+                .toList();
     }
 
     @Override

@@ -56,7 +56,6 @@ public class FilmWithGenresAndLikesExtractor implements ResultSetExtractor<List<
                 film.getLikes().add(userId);
             }
         }
-
         return new ArrayList<>(filmMap.values());
     }
 }

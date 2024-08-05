@@ -8,12 +8,10 @@ import ru.yandex.practicum.filmorate.dto.userRequest.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.util.RequestStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -69,17 +67,11 @@ public class UserService {
 
     public void addFriend(long fromUserId, long toFriendId) {
         log.info("Add request from user {} to user {}", fromUserId, toFriendId);
-        User user = userRepository.findUserById(fromUserId)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь  с таким id не найден"));
-        User friend = userRepository.findUserById(toFriendId)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь  с таким id не найден"));
-        if (friend.getFriends().contains(user.getId())) {
-            user.getFriends().add(friend.getId());
-            userRepository.addFriend(fromUserId, toFriendId, RequestStatus.CONFIRMED);
-        } else {
-            user.getFriends().add(toFriendId);
-            userRepository.addFriend(fromUserId, toFriendId, RequestStatus.NOT_CONFIRMED);
-        }
+        isUsersExists(fromUserId, toFriendId);
+        userRepository.findUserById(fromUserId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь с таким id не найден"))
+                .getFriends().add(toFriendId);
+        userRepository.addFriend(fromUserId, toFriendId);
         log.info("Added friend {} to user {}", fromUserId, toFriendId);
     }
 
@@ -96,12 +88,11 @@ public class UserService {
 
     public List<UserDto> getCommonFriends(long userId, long otherId) {
         log.info("Get common friends {} from user {}", otherId, userId);
-        Set<Long> commonIds = getUserFriends(userId)
+        isUsersExists(userId, otherId);
+        return userRepository.getCommonFriends(userId, otherId)
                 .stream()
-                .filter(id -> getUserFriends(otherId).contains(id))
-                .map(UserDto::getId)
-                .collect(Collectors.toSet());
-        return commonIds.stream().map(this::getUserOrException).toList();
+                .map(UserMapper::mapToUserDto)
+                .toList();
     }
 
     public List<UserDto> getUserFriends(long id) {

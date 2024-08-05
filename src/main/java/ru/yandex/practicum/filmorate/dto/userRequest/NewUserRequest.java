@@ -10,11 +10,13 @@ public class NewUserRequest {
 
     @Email
     @NotEmpty
-    @NotNull
+    @Size(max = 100)
     private String email;
+    @Size(max = 100)
     private String name;
     @NotBlank
     @Pattern(regexp = "^\\S*$")
+    @Size(max = 100)
     private String login;
     @PastOrPresent
     @NotNull

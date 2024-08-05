@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.util.RequestStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,9 +17,11 @@ public interface UserStorage {
 
     List<User> getAllUsers();
 
-    void addFriend(long userId, long friendId, RequestStatus requestStatus);
+    void addFriend(long userId, long friendId);
 
     int deleteFriend(long userId, long friendId);
 
     List<User> getUserFriends(long userId);
+
+    List<User> getCommonFriends(long userId, long otherId);
 }

@@ -4,10 +4,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.util.RequestStatus;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository("UserRepo")
 public class UserRepository extends BaseRepository<User> implements UserStorage {
@@ -21,8 +22,8 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
 
     private static final String DELETE_QUERY = "DELETE FROM users WHERE id = ?";
 
-    private static final String INSERT_QUERY_FRIEND = "INSERT INTO friends (user_id, friend_id, request_status)" +
-            "VALUES (?, ?, ?)";
+    private static final String INSERT_QUERY_FRIEND = "INSERT INTO friends (user_id, friend_id)" +
+            "VALUES (?, ?)";
 
     private static final String FIND_FRIENDS = "SELECT u.* FROM users AS u " +
             "JOIN friends AS f ON u.id = f.friend_id WHERE f.user_id = ?";
@@ -79,12 +80,24 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
         return findMany(FIND_ALL_QUERY);
     }
 
-    public void addFriend(long fromUser, long toFriend, RequestStatus requestStatus) {
-        jdbcTemplate.update(INSERT_QUERY_FRIEND, fromUser, toFriend, requestStatus.toString());
+    public void addFriend(long fromUser, long toFriend) {
+        jdbcTemplate.update(INSERT_QUERY_FRIEND, fromUser, toFriend);
     }
 
     public List<User> getUserFriends(long userId) {
         return jdbcTemplate.query(FIND_FRIENDS, mapper, userId);
+    }
+
+    @Override
+    public List<User> getCommonFriends(long userId, long otherId) {
+        Set<Long> commonIds = getUserFriends(userId)
+                .stream()
+                .filter(id -> getUserFriends(otherId).contains(id))
+                .map(User::getId)
+                .collect(Collectors.toSet());
+        return commonIds.stream()
+                .map(this::findUserById)
+                .map(user -> user.orElse(null)).toList();
     }
 
     public int deleteFriend(long userId, long friendId) {

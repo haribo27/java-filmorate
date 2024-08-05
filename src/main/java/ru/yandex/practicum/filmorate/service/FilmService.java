@@ -3,14 +3,15 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FilmGenreRepository;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
-import ru.yandex.practicum.filmorate.dto.filmRequest.FilmRequest;
+import ru.yandex.practicum.filmorate.dto.filmRequest.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.filmRequest.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -18,29 +19,34 @@ import java.util.List;
 public class FilmService {
 
     private final FilmStorage filmRepository;
+    private final FilmGenreRepository filmGenreRepository;
     private final UserService userService;
     private final MpaService mpaService;
     private final GenreService genreService;
 
 
-    public FilmService(@Qualifier("FilmRepo") FilmStorage filmRepository, UserService userService, MpaService mpaService, GenreService genreService) {
+    public FilmService(@Qualifier("FilmRepo") FilmStorage filmRepository, FilmGenreRepository filmGenreRepository, UserService userService, MpaService mpaService, GenreService genreService) {
         this.filmRepository = filmRepository;
+        this.filmGenreRepository = filmGenreRepository;
         this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
     }
 
-    public FilmDto createFilm(FilmRequest request) {
+    public FilmDto createFilm(NewFilmRequest request) {
         log.info("Creating film: {}", request);
         mpaService.isMpaExist(request.getMpa().getId());
         genreService.isGenresExists(request.getGenres());
         Film film = FilmMapper.mapToFilm(request);
         film = filmRepository.createFilm(film);
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            filmGenreRepository.saveGenre(film.getId(), film.getGenres().stream().toList());
+        }
         log.info("Created new film: {}", film);
         return FilmMapper.mapToFilmDto(film);
     }
 
-    public FilmDto updateFilm(FilmRequest request) {
+    public FilmDto updateFilm(UpdateFilmRequest request) {
         log.info("Updating film: {}", request);
         Film updatedFilm = filmRepository.findById(request.getId())
                 .map(film -> FilmMapper.updateFilmFields(film, request))
@@ -91,11 +97,7 @@ public class FilmService {
 
     public List<Film> getPopularFilms(int count) {
         log.info("Getting popular films");
-        return filmRepository.getAllFilms()
-                .stream()
-                .sorted(Comparator.comparingInt((Film o) -> o.getLikes().size()).reversed())
-                .limit(count)
-                .toList();
+        return filmRepository.getPopularFilms(count);
     }
 
     private void isFilmExist(long id) {
