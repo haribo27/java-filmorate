@@ -69,10 +69,11 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             ORDER BY like_count DESC
             LIMIT ?
             """;
+    private final FilmWithGenresAndLikesExtractor extractor;
 
-
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresAndLikesExtractor extractor) {
         super(jdbc, mapper);
+        this.extractor = extractor;
     }
 
     @Override
@@ -107,12 +108,12 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     public List<Film> getAllFilms() {
-        return findMany(FIND_ALL_QUERY,new FilmWithGenresAndLikesExtractor());
+        return findMany(FIND_ALL_QUERY,extractor);
     }
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        return findMany(FIND_POPULAR_FILMS,new FilmWithGenresAndLikesExtractor(),count);
+        return findMany(FIND_POPULAR_FILMS,extractor,count);
     }
 
     @Override
