@@ -2,11 +2,15 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dto.userRequest.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.userRequest.UpdateUserRequest;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -20,35 +24,36 @@ public class UserController {
     }
 
     @GetMapping
-    public Collection<User> getAllUsers() {
+    @ResponseStatus(HttpStatus.OK)
+    public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable long id) {
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto getUser(@PathVariable long id) {
         return userService.getUserOrException(id);
     }
 
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDto createUser(@Valid @RequestBody NewUserRequest request) {
+        return userService.createUser(request);
+    }
+
+    @PutMapping
+    public UserDto updateUser(@Valid @RequestBody UpdateUserRequest request) {
+        return userService.updateUser(request);
+    }
+
     @GetMapping("/{userId}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable long userId, @PathVariable long otherId) {
+    public List<UserDto> getCommonFriends(@PathVariable long userId, @PathVariable long otherId) {
         return userService.getCommonFriends(userId, otherId);
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getUserFriends(@PathVariable long id) {
+    public Collection<UserDto> getUserFriends(@PathVariable("id") long id) {
         return userService.getUserFriends(id);
-    }
-
-    @PostMapping
-    public User createUser(@Valid @RequestBody User user) {
-        userService.createUser(user);
-        return user;
-    }
-
-    @PutMapping
-    public User updateUser(@Valid @RequestBody User user) {
-        userService.updateUser(user);
-        return user;
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -62,6 +67,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.OK)
     public void deleteFriend(@PathVariable long userId, @PathVariable() long friendId) {
         userService.deleteFriend(userId, friendId);
     }
