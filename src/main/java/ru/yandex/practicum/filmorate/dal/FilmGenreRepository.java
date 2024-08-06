@@ -14,16 +14,14 @@ import java.util.List;
 public class FilmGenreRepository extends BaseRepository<Genre> {
 
     private static final String INSERT_QUERY = "INSERT INTO FILM_GENRE (film_id,genre_id) VALUES (?,?)";
-    private final JdbcTemplate jdbcTemplate;
 
-
-    public FilmGenreRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper, JdbcTemplate jdbcTemplate) {
+    public FilmGenreRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper);
-        this.jdbcTemplate = jdbcTemplate;
     }
 
+
     public int[] saveGenre(long filmId, List<Genre> genres) {
-        return this.jdbcTemplate.batchUpdate(
+        return this.jdbc.batchUpdate(
                 INSERT_QUERY,
                 new BatchPreparedStatementSetter() {
                     @Override

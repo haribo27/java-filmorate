@@ -41,8 +41,8 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler
-    public ResponseEntity<String> handleConstraintValidationException(ConstraintViolationException ex) {
+    @ExceptionHandler({ConstraintViolationException.class, MethodArgumentNotValidException.class})
+    public ResponseEntity<String> handleConstraintValidationException(Exception ex) {
         log.debug("Invalid params {}, status 400 bad request", ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }

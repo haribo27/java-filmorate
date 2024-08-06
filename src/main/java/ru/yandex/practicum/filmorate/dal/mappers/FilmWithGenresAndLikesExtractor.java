@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dal.mappers;
 
 import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -8,13 +9,12 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-
+@Component
 public class FilmWithGenresAndLikesExtractor implements ResultSetExtractor<List<Film>> {
 
     @Override
@@ -39,7 +39,6 @@ public class FilmWithGenresAndLikesExtractor implements ResultSetExtractor<List<
                 film.setMpa(mpa);
 
                 film.setGenres(new LinkedHashSet<>());
-                film.setLikes(new HashSet<>());
                 filmMap.put(filmId, film);
             }
 
@@ -49,11 +48,6 @@ public class FilmWithGenresAndLikesExtractor implements ResultSetExtractor<List<
                 genre.setId(genreId);
                 genre.setName(rs.getString("film_genre_name"));
                 film.getGenres().add(genre);
-            }
-
-            long userId = rs.getLong("liked_by_user_id");
-            if (userId > 0) {
-                film.getLikes().add(userId);
             }
         }
         return new ArrayList<>(filmMap.values());

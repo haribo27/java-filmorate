@@ -22,7 +22,6 @@ public class UpdateFilmRequest {
     private String name;
     @Size(min = 1, max = 200)
     @NotBlank
-    @Size(max = 200)
     private String description;
     @NotBeforeDate
     private LocalDate releaseDate;

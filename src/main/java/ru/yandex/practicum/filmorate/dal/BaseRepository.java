@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
@@ -29,6 +30,10 @@ public class BaseRepository<T> {
 
     protected List<T> findMany(String query, Object... params) {
         return jdbc.query(query, mapper, params);
+    }
+
+    protected List<T> findMany(String query, ResultSetExtractor<List<T>> extractor, Object... params) {
+        return jdbc.query(query, extractor, params);
     }
 
     protected boolean delete(String query, long id) {

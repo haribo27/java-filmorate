@@ -1,4 +1,5 @@
-INSERT INTO GENRE (NAME)
+MERGE INTO GENRE (NAME)
+KEY (NAME)
 VALUES
 ('Комедия'),
 ('Драма'),
@@ -7,7 +8,8 @@ VALUES
 ('Документальный'),
 ('Боевик');
 
-INSERT INTO rating (name)
+MERGE INTO rating (name)
+KEY (name)
 VALUES
 ('G'),
 ('PG'),

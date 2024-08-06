@@ -6,11 +6,10 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmWithGenresAndLikesExtractor;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-@Repository("FilmRepo")
+@Repository
 public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
 
     private static final String FIND_ALL_QUERY = """
@@ -40,12 +39,40 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
     private static final String INSERT_FILM_LIKE = "INSERT INTO FILM_LIKES (user_id, film_id) VALUES (?, ?)";
     private static final String DELETE_LIKE_FROM_FILM = "DELETE FROM FILM_LIKES WHERE user_id = ? AND film_id = ?";
+    private static final String FIND_POPULAR_FILMS = """
+            SELECT
+               u.id AS film_id,
+               u.name AS film_name,
+               u.description AS film_description,
+               u.release_date AS film_release_date,
+               u.duration AS film_duration,
+               u.rating AS film_rating_id,
+               r.name AS film_rating_name,
+               fg.genre_id AS film_genre_id,
+               g.name AS film_genre_name,
+               COUNT(fl.user_id) AS like_count
+            FROM films AS u
+            LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
+            LEFT JOIN genre AS g ON fg.genre_id = g.id
+            LEFT JOIN rating AS r ON u.rating = r.id
+            LEFT JOIN FILM_LIKES AS fl ON u.id = fl.film_id
+            GROUP BY
+                u.id,
+                u.name,
+                u.description,
+                u.release_date,
+                u.duration,
+                u.rating,
+                r.name,
+                fg.genre_id,
+                g.name
+            ORDER BY like_count DESC
+            LIMIT ?
+            """;
 
-    private final JdbcTemplate jdbcTemplate;
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, JdbcTemplate jdbcTemplate) {
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
-        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -80,16 +107,12 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     public List<Film> getAllFilms() {
-        return jdbcTemplate.query(FIND_ALL_QUERY, new FilmWithGenresAndLikesExtractor());
+        return findMany(FIND_ALL_QUERY,new FilmWithGenresAndLikesExtractor());
     }
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        return getAllFilms()
-                .stream()
-                .sorted(Comparator.comparingInt((Film o) -> o.getLikes().size()).reversed())
-                .limit(count)
-                .toList();
+        return findMany(FIND_POPULAR_FILMS,new FilmWithGenresAndLikesExtractor(),count);
     }
 
     @Override

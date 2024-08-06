@@ -19,7 +19,6 @@ public class NewFilmRequest {
     @NotBlank
     @Size(max = 100)
     private String name;
-    @Size(min = 1, max = 200)
     @NotBlank
     @Size(max = 200)
     private String description;
