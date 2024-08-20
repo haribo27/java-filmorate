@@ -4,9 +4,10 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.EventDto;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.dto.userRequest.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.userRequest.UpdateUserRequest;
-import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -33,6 +34,11 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public UserDto getUser(@PathVariable long id) {
         return userService.getUserOrException(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<EventDto> getFeed(@PathVariable int id) {
+        return userService.getFeed(id);
     }
 
     @PostMapping
