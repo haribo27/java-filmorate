@@ -1,0 +1,95 @@
+package ru.yandex.practicum.filmorate.dal;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Review;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public class ReviewRepository extends BaseRepository<Review>{
+
+    private static final String INSERT_REVIEW = "INSERT INTO REVIEWS (content, is_positive," +
+            " user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
+    private static final String INSERT_REVIEWS_LIKE_OR_DISLIKE = "INSERT INTO REVIEWS_LIKES " +
+            "(user_id, review_id, is_like) VALUES (?, ?, ?)";
+    private static final String UPDATE_REVIEW = "UPDATE REVIEWS SET content = ?, is_positive = ?, user_id = ?," +
+            " film_id = ?, useful = ? WHERE id = ?";
+    private static final String DELETE_REVIEW_LIKE = "DELETE FROM REVIEW_LIKES WHERE " +
+            "user_id = ? AND review_id = ? AND is_like = ?";
+    private static final String UPDATE_REVIEWS_INCREMENT_USEFUL = "UPDATE REVIEWS SET useful +=1 WHERE id = ?";
+    private static final String UPDATE_REVIEWS_DECREMENT_USEFUL = "UPDATE REVIEWS SET useful -=1 WHERE id = ?";
+    private static final String DELETE_REVIEW = "DELETE FROM REVIEWS WHERE id = ?";
+    private static final String FIND_REVIEW_BY_ID = "SELECT * FROM REVIEWS WHERE id = ?";
+    private static final String FIND_ALL = "SELECT * FROM REVIEWS LIMIT ?";
+    private static final String FIND_ALL_FILMS_REVIEWS = "SELECT * FROM REVIEWS WHERE film_id = ? LIMIT ?";
+
+    public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
+        super(jdbc, mapper);
+    }
+
+    public Review saveReview(Review review) {
+        long id = insert(
+                INSERT_REVIEW,
+                review.getContent(),
+                review.isPositive(),
+                review.getUserId(),
+                review.getFilmId(),
+                review.getUseful()
+        );
+        review.setId(id);
+        return review;
+    }
+
+    public void updateReview(Review review) {
+        update(
+                UPDATE_REVIEW,
+                review.getContent(),
+                review.isPositive(),
+                review.getUserId(),
+                review.getFilmId(),
+                review.getUseful(),
+                review.getId()
+        );
+    }
+
+    public Optional<Review> findById(long id) {
+        return findOne(FIND_REVIEW_BY_ID,id);
+    }
+
+    public boolean deleteReview(long id) {
+        return delete(DELETE_REVIEW,id);
+    }
+
+    public List<Review> getAllReviews(long count) {
+        return findMany(FIND_ALL,count);
+    }
+
+    public List<Review> getFilmsReviews(Long filmId, long count) {
+        return findMany(FIND_ALL_FILMS_REVIEWS,filmId,count);
+    }
+
+    public void addReviewLike(long id, long userId) {
+        update(UPDATE_REVIEWS_INCREMENT_USEFUL,id);
+        insert(INSERT_REVIEWS_LIKE_OR_DISLIKE,userId,id,true);
+    }
+
+    public void addReviewDislike(long id, long userId) {
+        update(UPDATE_REVIEWS_DECREMENT_USEFUL,id);
+        insert(INSERT_REVIEWS_LIKE_OR_DISLIKE,userId,id,false);
+    }
+
+    public int deleteReviewLike(long id, long userId) {
+        int updatedRows = jdbc.update(DELETE_REVIEW_LIKE, userId, id, true);
+        if (updatedRows > 0) update(UPDATE_REVIEWS_DECREMENT_USEFUL,id);
+        return updatedRows;
+    }
+
+    public int deleteReviewDislike(long id, long userId) {
+        int updatedRows = jdbc.update(DELETE_REVIEW_LIKE,userId,id,false);
+        if (updatedRows > 0) update(UPDATE_REVIEWS_INCREMENT_USEFUL,id);
+        return updatedRows;
+    }
+}
