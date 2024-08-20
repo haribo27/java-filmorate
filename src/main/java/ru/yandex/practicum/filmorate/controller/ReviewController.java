@@ -41,7 +41,7 @@ public class ReviewController {
 
     @GetMapping
     public List<ReviewDto> getFilmsReviewOrAll(@RequestParam(value = "filmId", required = false) Long filmId,
-                                               @RequestParam(value = "count", defaultValue = "10") long count) {
+                                               @RequestParam(value = "count",required = false, defaultValue = "10") long count) {
         return reviewService.getFilmsReviewsOrAll(filmId, count);
     }
 

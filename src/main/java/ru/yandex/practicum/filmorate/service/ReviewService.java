@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.dto.reviewRequest.NewReviewRequest;
 import ru.yandex.practicum.filmorate.dto.reviewRequest.UpdateReviewRequest;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.Review;
 
@@ -30,8 +31,11 @@ public class ReviewService {
 
     public ReviewDto saveReview(NewReviewRequest request) {
         log.info("Saving new Review {}", request);
+        if (request.getUserId() < 0 || request.getFilmId() < 0) {
+            throw new ValidationException("Идентификаторы фильма должны быть больше 0");
+        }
         filmRepository.findById(request.getFilmId())
-                .orElseThrow(() -> new EntityNotFoundException("Фильм с данным айди не найден"));
+                .orElseThrow(() -> new ValidationException("Фильм с данным айди не найден"));
         isUserExist(request.getUserId());
         Review review = ReviewMapper.mapToReview(request);
         review = reviewRepository.saveReview(review);
