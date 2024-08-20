@@ -16,10 +16,8 @@ public class NewReviewRequest {
     @NotNull
     private boolean isPositive;
     @NotNull
-    @Positive
     private long userId;
     @NotNull
-    @Positive
     private long filmId;
     @NotNull
     private int useful;
