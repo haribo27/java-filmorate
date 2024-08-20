@@ -31,7 +31,7 @@ public class ReviewService {
     public ReviewDto saveReview(NewReviewRequest request) {
         log.info("Saving new Review {}", request);
         filmRepository.findById(request.getFilmId())
-                .orElseThrow(()-> new EntityNotFoundException("Фильм с данным айди не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("Фильм с данным айди не найден"));
         isUserExist(request.getUserId());
         Review review = ReviewMapper.mapToReview(request);
         review = reviewRepository.saveReview(review);
