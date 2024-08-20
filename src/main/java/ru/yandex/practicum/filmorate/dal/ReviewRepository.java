@@ -72,20 +72,20 @@ public class ReviewRepository extends BaseRepository<Review> {
     }
 
     public void addReviewLike(long id, long userId) {
-        update(UPDATE_REVIEWS_INCREMENT_USEFUL, id);
         jdbc.update(INSERT_REVIEWS_LIKE_OR_DISLIKE,
                 userId,
                 id,
                 true);
+        update(UPDATE_REVIEWS_INCREMENT_USEFUL, id);
     }
 
     public void addReviewDislike(long id, long userId) {
-        update(UPDATE_REVIEWS_DECREMENT_USEFUL, id);
         jdbc.update(
                 INSERT_REVIEWS_LIKE_OR_DISLIKE,
                 userId,
                 id,
                 false);
+        update(UPDATE_REVIEWS_DECREMENT_USEFUL, id);
     }
 
     public int deleteReviewLike(long id, long userId) {

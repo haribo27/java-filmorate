@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.ReviewRepository;
 import ru.yandex.practicum.filmorate.dal.UserRepository;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
@@ -19,14 +20,19 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final FilmRepository filmRepository;
 
-    public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository) {
+    public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository, FilmRepository filmRepository) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
+        this.filmRepository = filmRepository;
     }
 
     public ReviewDto saveReview(NewReviewRequest request) {
         log.info("Saving new Review {}", request);
+        filmRepository.findById(request.getFilmId())
+                .orElseThrow(()-> new EntityNotFoundException("Фильм с данным айди не найден"));
+        isUserExist(request.getUserId());
         Review review = ReviewMapper.mapToReview(request);
         review = reviewRepository.saveReview(review);
         log.info("Saved review {}", review);
@@ -68,12 +74,14 @@ public class ReviewService {
             log.info("getting all reviews");
             return reviewRepository.getAllReviews(count)
                     .stream()
-                    .map(ReviewMapper::mapToReviewDto).toList();
+                    .map(ReviewMapper::mapToReviewDto)
+                    .toList();
         } else {
             log.info("Getting reviews for film with id {}", filmId);
             return reviewRepository.getFilmsReviews(filmId, count)
                     .stream()
-                    .map(ReviewMapper::mapToReviewDto).toList();
+                    .map(ReviewMapper::mapToReviewDto)
+                    .toList();
         }
     }
 
