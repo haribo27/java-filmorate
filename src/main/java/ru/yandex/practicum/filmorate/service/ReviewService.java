@@ -36,7 +36,7 @@ public class ReviewService {
     public ReviewDto updateReview(UpdateReviewRequest request) {
         log.info("Updating review {}", request);
         Review updatedReview = reviewRepository.findById(request.getReviewId())
-                .map(review -> ReviewMapper.mapToUpdatedReview(review,request))
+                .map(review -> ReviewMapper.mapToUpdatedReview(review, request))
                 .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
         reviewRepository.updateReview(updatedReview);
         log.info("Updated review {}", updatedReview);
@@ -44,19 +44,19 @@ public class ReviewService {
     }
 
     public void deleteReview(long id) {
-        log.info("Deleting review with id {}",id);
+        log.info("Deleting review with id {}", id);
         reviewRepository.findById(id)
-                .orElseThrow(()-> new EntityNotFoundException("Отзыв с таким айди не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
         if (reviewRepository.deleteReview(id)) {
             log.info("Review deleted");
-        } else  {
+        } else {
             log.info("Review not deleted");
         }
 
     }
 
     public ReviewDto findById(long id) {
-        log.info("Finding Review by id {}",id);
+        log.info("Finding Review by id {}", id);
         return reviewRepository.findById(id)
                 .map(ReviewMapper::mapToReviewDto)
                 .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
@@ -70,30 +70,31 @@ public class ReviewService {
                     .stream()
                     .map(ReviewMapper::mapToReviewDto).toList();
         } else {
-            log.info("Getting reviews for film with id {}",filmId);
-            return reviewRepository.getFilmsReviews(filmId,count)
+            log.info("Getting reviews for film with id {}", filmId);
+            return reviewRepository.getFilmsReviews(filmId, count)
                     .stream()
                     .map(ReviewMapper::mapToReviewDto).toList();
         }
     }
 
     public void addReviewLike(long id, long userId) {
+        log.info("Adding review like from user{}", userId);
         isReviewExist(id);
         isUserExist(userId);
-        reviewRepository.addReviewLike(id,userId);
+        reviewRepository.addReviewLike(id, userId);
     }
 
     public void addReviewDislike(long id, long userId) {
         isReviewExist(id);
         isUserExist(userId);
-        reviewRepository.addReviewDislike(id,userId);
+        reviewRepository.addReviewDislike(id, userId);
     }
 
     public void deleteReviewLike(long id, long userId) {
-        log.info("Deleting review like from review {} and user {}", id,userId);
+        log.info("Deleting review like from review {} and user {}", id, userId);
         isReviewExist(id);
         isUserExist(userId);
-        if (reviewRepository.deleteReviewLike(id,userId) > 0) {
+        if (reviewRepository.deleteReviewLike(id, userId) > 0) {
             log.info("Review like is deleted");
         } else {
             log.info("On this review user does not has likes");
@@ -101,10 +102,10 @@ public class ReviewService {
     }
 
     public void deleteReviewDislike(long id, long userId) {
-        log.info("Deleting review dislike from review {} and user {}",id,userId);
+        log.info("Deleting review dislike from review {} and user {}", id, userId);
         isReviewExist(id);
         isUserExist(userId);
-        if (reviewRepository.deleteReviewDislike(id,userId) > 0) {
+        if (reviewRepository.deleteReviewDislike(id, userId) > 0) {
             log.info("Review dislike is deleted");
         } else {
             log.info("On this review user does not has dislike");
@@ -118,6 +119,6 @@ public class ReviewService {
 
     private void isUserExist(long userId) {
         userRepository.findUserById(userId)
-                .orElseThrow(()-> new EntityNotFoundException("Юзера с таким айди не существует"));
+                .orElseThrow(() -> new EntityNotFoundException("Юзера с таким айди не существует"));
     }
 }

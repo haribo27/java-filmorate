@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class ReviewRepository extends BaseRepository<Review>{
+public class ReviewRepository extends BaseRepository<Review> {
 
     private static final String INSERT_REVIEW = "INSERT INTO REVIEWS (content, is_positive," +
             " user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
@@ -17,10 +17,10 @@ public class ReviewRepository extends BaseRepository<Review>{
             "(user_id, review_id, is_like) VALUES (?, ?, ?)";
     private static final String UPDATE_REVIEW = "UPDATE REVIEWS SET content = ?, is_positive = ?, user_id = ?," +
             " film_id = ?, useful = ? WHERE id = ?";
-    private static final String DELETE_REVIEW_LIKE = "DELETE FROM REVIEW_LIKES WHERE " +
+    private static final String DELETE_REVIEW_LIKE = "DELETE FROM REVIEWS_LIKES WHERE " +
             "user_id = ? AND review_id = ? AND is_like = ?";
-    private static final String UPDATE_REVIEWS_INCREMENT_USEFUL = "UPDATE REVIEWS SET useful +=1 WHERE id = ?";
-    private static final String UPDATE_REVIEWS_DECREMENT_USEFUL = "UPDATE REVIEWS SET useful -=1 WHERE id = ?";
+    private static final String UPDATE_REVIEWS_INCREMENT_USEFUL = "UPDATE REVIEWS SET useful = useful + 1 WHERE id = ?";
+    private static final String UPDATE_REVIEWS_DECREMENT_USEFUL = "UPDATE REVIEWS SET useful = useful -1 WHERE id = ?";
     private static final String DELETE_REVIEW = "DELETE FROM REVIEWS WHERE id = ?";
     private static final String FIND_REVIEW_BY_ID = "SELECT * FROM REVIEWS WHERE id = ?";
     private static final String FIND_ALL = "SELECT * FROM REVIEWS LIMIT ?";
@@ -56,40 +56,47 @@ public class ReviewRepository extends BaseRepository<Review>{
     }
 
     public Optional<Review> findById(long id) {
-        return findOne(FIND_REVIEW_BY_ID,id);
+        return findOne(FIND_REVIEW_BY_ID, id);
     }
 
     public boolean deleteReview(long id) {
-        return delete(DELETE_REVIEW,id);
+        return delete(DELETE_REVIEW, id);
     }
 
     public List<Review> getAllReviews(long count) {
-        return findMany(FIND_ALL,count);
+        return findMany(FIND_ALL, count);
     }
 
     public List<Review> getFilmsReviews(Long filmId, long count) {
-        return findMany(FIND_ALL_FILMS_REVIEWS,filmId,count);
+        return findMany(FIND_ALL_FILMS_REVIEWS, filmId, count);
     }
 
     public void addReviewLike(long id, long userId) {
-        update(UPDATE_REVIEWS_INCREMENT_USEFUL,id);
-        insert(INSERT_REVIEWS_LIKE_OR_DISLIKE,userId,id,true);
+        update(UPDATE_REVIEWS_INCREMENT_USEFUL, id);
+        jdbc.update(INSERT_REVIEWS_LIKE_OR_DISLIKE,
+                userId,
+                id,
+                true);
     }
 
     public void addReviewDislike(long id, long userId) {
-        update(UPDATE_REVIEWS_DECREMENT_USEFUL,id);
-        insert(INSERT_REVIEWS_LIKE_OR_DISLIKE,userId,id,false);
+        update(UPDATE_REVIEWS_DECREMENT_USEFUL, id);
+        jdbc.update(
+                INSERT_REVIEWS_LIKE_OR_DISLIKE,
+                userId,
+                id,
+                false);
     }
 
     public int deleteReviewLike(long id, long userId) {
         int updatedRows = jdbc.update(DELETE_REVIEW_LIKE, userId, id, true);
-        if (updatedRows > 0) update(UPDATE_REVIEWS_DECREMENT_USEFUL,id);
+        if (updatedRows > 0) update(UPDATE_REVIEWS_DECREMENT_USEFUL, id);
         return updatedRows;
     }
 
     public int deleteReviewDislike(long id, long userId) {
-        int updatedRows = jdbc.update(DELETE_REVIEW_LIKE,userId,id,false);
-        if (updatedRows > 0) update(UPDATE_REVIEWS_INCREMENT_USEFUL,id);
+        int updatedRows = jdbc.update(DELETE_REVIEW_LIKE, userId, id, false);
+        if (updatedRows > 0) update(UPDATE_REVIEWS_INCREMENT_USEFUL, id);
         return updatedRows;
     }
 }

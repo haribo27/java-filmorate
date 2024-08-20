@@ -40,28 +40,28 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<ReviewDto> getFilmsReviewOrAll(@RequestParam("filmId") Long filmId,
+    public List<ReviewDto> getFilmsReviewOrAll(@RequestParam(value = "filmId", required = false) Long filmId,
                                                @RequestParam(value = "count", defaultValue = "10") long count) {
-        return reviewService.getFilmsReviewsOrAll(filmId,count);
+        return reviewService.getFilmsReviewsOrAll(filmId, count);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public void addReviewLike(@PathVariable long id, @PathVariable long userId) {
-        reviewService.addReviewLike(id,userId);
+        reviewService.addReviewLike(id, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
     public void addReviewDislike(@PathVariable long id, @PathVariable long userId) {
-        reviewService.addReviewDislike(id,userId);
+        reviewService.addReviewDislike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteReviewLike(@PathVariable long id, @PathVariable long userId) {
-        reviewService.deleteReviewLike(id,userId);
+        reviewService.deleteReviewLike(id, userId);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
     public void deleteReviewDislike(@PathVariable long id, @PathVariable long userId) {
-        reviewService.deleteReviewDislike(id,userId);
+        reviewService.deleteReviewDislike(id, userId);
     }
 }
