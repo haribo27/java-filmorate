@@ -13,7 +13,7 @@ public class NewReviewRequest {
     @Size(max = 5000)
     private String content;
     @NotNull
-    private boolean isPositive;
+    private Boolean isPositive;
     @NotNull
     private long userId;
     @NotNull

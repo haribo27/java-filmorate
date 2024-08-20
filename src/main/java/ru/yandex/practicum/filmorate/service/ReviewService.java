@@ -23,6 +23,8 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
 
+    private long currentId;
+
     public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository, FilmRepository filmRepository) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
@@ -32,7 +34,7 @@ public class ReviewService {
     public ReviewDto saveReview(NewReviewRequest request) {
         log.info("Saving new Review {}", request);
         if (request.getUserId() < 0 || request.getFilmId() < 0) {
-            throw new ValidationException("Идентификаторы фильма должны быть больше 0");
+            throw new EntityNotFoundException("Идентификаторы фильма должны быть больше 0");
         }
         filmRepository.findById(request.getFilmId())
                 .orElseThrow(() -> new ValidationException("Фильм с данным айди не найден"));
@@ -40,6 +42,7 @@ public class ReviewService {
         Review review = ReviewMapper.mapToReview(request);
         review = reviewRepository.saveReview(review);
         log.info("Saved review {}", review);
+        currentId = review.getId();
         return ReviewMapper.mapToReviewDto(review);
     }
 
@@ -65,14 +68,19 @@ public class ReviewService {
 
     }
 
-    public ReviewDto findById(long id) {
+    public ReviewDto findById(String id) {
+        if (id == null || id.equals("null")) {
+            return reviewRepository.findById(currentId)
+                    .map(ReviewMapper::mapToReviewDto)
+                    .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
+        }
         log.info("Finding Review by id {}", id);
-        return reviewRepository.findById(id)
+        return reviewRepository.findById(Long.parseLong(id))
                 .map(ReviewMapper::mapToReviewDto)
                 .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
     }
 
-    public List<ReviewDto> getFilmsReviewsOrAll(Long filmId, long count) {
+    public List<ReviewDto> getFilmsReviewsOrAll(Long filmId, Long count) {
         log.info("Getting film's reviews or getting all reviews");
         if (filmId == null) {
             log.info("getting all reviews");
@@ -97,6 +105,7 @@ public class ReviewService {
     }
 
     public void addReviewDislike(long id, long userId) {
+        log.info("Add review {} dislike from user {}", id, userId);
         isReviewExist(id);
         isUserExist(userId);
         reviewRepository.addReviewDislike(id, userId);
@@ -125,12 +134,14 @@ public class ReviewService {
     }
 
     private void isReviewExist(long id) {
+        log.info("Check is review with id {} exist", id);
         reviewRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
     }
 
     private void isUserExist(long userId) {
+        log.info("Check is User with id {} exist", userId);
         userRepository.findUserById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Юзера с таким айди не существует"));
+                .orElseThrow(() -> new ValidationException("Юзера с таким айди не существует"));
     }
 }

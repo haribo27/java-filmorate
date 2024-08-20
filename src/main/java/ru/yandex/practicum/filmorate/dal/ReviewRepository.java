@@ -13,17 +13,20 @@ public class ReviewRepository extends BaseRepository<Review> {
 
     private static final String INSERT_REVIEW = "INSERT INTO REVIEWS (content, is_positive," +
             " user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
-    private static final String INSERT_REVIEWS_LIKE_OR_DISLIKE = "INSERT INTO REVIEWS_LIKES " +
+    private static final String FIND_ALL = "SELECT * FROM REVIEWS";
+    private static final String INSERT_REVIEWS_LIKE = "INSERT INTO REVIEWS_LIKES " +
             "(user_id, review_id, is_like) VALUES (?, ?, ?)";
+    private final String UPDATE_REVIEWS_LIKES_ON_DISLIKE = "UPDATE REVIEWS_LIKES SET IS_LIKE = false " +
+            "where user_id = ? AND review_id = ?";
     private static final String UPDATE_REVIEW = "UPDATE REVIEWS SET content = ?, is_positive = ?, user_id = ?," +
             " film_id = ?, useful = ? WHERE id = ?";
     private static final String DELETE_REVIEW_LIKE = "DELETE FROM REVIEWS_LIKES WHERE " +
             "user_id = ? AND review_id = ? AND is_like = ?";
     private static final String UPDATE_REVIEWS_INCREMENT_USEFUL = "UPDATE REVIEWS SET useful = useful + 1 WHERE id = ?";
     private static final String UPDATE_REVIEWS_DECREMENT_USEFUL = "UPDATE REVIEWS SET useful = useful -1 WHERE id = ?";
+    private static final String ADD_DISLIKE_TO_REVIEW = "UPDATE REVIEWS SET useful = useful -2 WHERE id = ?";
     private static final String DELETE_REVIEW = "DELETE FROM REVIEWS WHERE id = ?";
     private static final String FIND_REVIEW_BY_ID = "SELECT * FROM REVIEWS WHERE id = ?";
-    private static final String FIND_ALL = "SELECT * FROM REVIEWS LIMIT ?";
     private static final String FIND_ALL_FILMS_REVIEWS = "SELECT * FROM REVIEWS WHERE film_id = ? LIMIT ?";
 
     public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
@@ -72,7 +75,7 @@ public class ReviewRepository extends BaseRepository<Review> {
     }
 
     public void addReviewLike(long id, long userId) {
-        jdbc.update(INSERT_REVIEWS_LIKE_OR_DISLIKE,
+        jdbc.update(INSERT_REVIEWS_LIKE,
                 userId,
                 id,
                 true);
@@ -81,11 +84,10 @@ public class ReviewRepository extends BaseRepository<Review> {
 
     public void addReviewDislike(long id, long userId) {
         jdbc.update(
-                INSERT_REVIEWS_LIKE_OR_DISLIKE,
+                UPDATE_REVIEWS_LIKES_ON_DISLIKE,
                 userId,
-                id,
-                false);
-        update(UPDATE_REVIEWS_DECREMENT_USEFUL, id);
+                id);
+        update(ADD_DISLIKE_TO_REVIEW, id);
     }
 
     public int deleteReviewLike(long id, long userId) {

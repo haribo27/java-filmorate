@@ -35,13 +35,13 @@ public class ReviewController {
     }
 
     @GetMapping("{id}")
-    public ReviewDto findReviewById(@PathVariable long id) {
+    public ReviewDto findReviewById(@PathVariable String id) {
         return reviewService.findById(id);
     }
 
     @GetMapping
     public List<ReviewDto> getFilmsReviewOrAll(@RequestParam(value = "filmId", required = false) Long filmId,
-                                               @RequestParam(value = "count",required = false, defaultValue = "10") long count) {
+                                               @RequestParam(value = "count", required = false, defaultValue = "10") long count) {
         return reviewService.getFilmsReviewsOrAll(filmId, count);
     }
 
