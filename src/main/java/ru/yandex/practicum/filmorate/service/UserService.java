@@ -87,8 +87,8 @@ public class UserService {
         log.info("Delete friend {} from user {}", friendId, userId);
         isUsersExists(userId, friendId);
         int rows = userRepository.deleteFriend(userId, friendId);
+        addEvent(userId, EventTypeFeed.FRIEND, OperationFeed.REMOVE, friendId);
         if (rows > 1) {
-            addEvent(userId, EventTypeFeed.FRIEND, OperationFeed.ADD, friendId);
             log.info("Deleted friend {} from user {}", friendId, userId);
         } else {
             log.info("Friend does not delete from user {}", userId);
