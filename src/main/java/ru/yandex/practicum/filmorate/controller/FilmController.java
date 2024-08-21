@@ -43,6 +43,11 @@ public class FilmController {
         return filmService.getPopularFilms(count);
     }
 
+    @GetMapping("/search")
+    public List<FilmDto> search() {
+        return null;
+    }
+
     @PostMapping
     public FilmDto createFilm(@Valid @RequestBody NewFilmRequest request) {
         return filmService.createFilm(request);
