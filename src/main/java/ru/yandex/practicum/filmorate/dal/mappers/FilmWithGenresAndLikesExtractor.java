@@ -2,17 +2,14 @@ package ru.yandex.practicum.filmorate.dal.mappers;
 
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class FilmWithGenresAndLikesExtractor implements ResultSetExtractor<List<Film>> {
@@ -39,6 +36,7 @@ public class FilmWithGenresAndLikesExtractor implements ResultSetExtractor<List<
                 film.setMpa(mpa);
 
                 film.setGenres(new LinkedHashSet<>());
+                film.setDirectors(new LinkedHashSet<>());
                 filmMap.put(filmId, film);
             }
 
@@ -48,6 +46,13 @@ public class FilmWithGenresAndLikesExtractor implements ResultSetExtractor<List<
                 genre.setId(genreId);
                 genre.setName(rs.getString("film_genre_name"));
                 film.getGenres().add(genre);
+            }
+            long directorId = rs.getLong("film_director_id");
+            if (directorId > 0) {
+                Director director = new Director();
+                director.setId(genreId);
+                director.setName(rs.getString("film_director_name"));
+                film.getDirectors().add(director);
             }
         }
         return new ArrayList<>(filmMap.values());
