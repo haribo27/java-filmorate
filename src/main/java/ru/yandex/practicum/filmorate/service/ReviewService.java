@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.dto.reviewRequest.UpdateReviewRequest;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
+import ru.yandex.practicum.filmorate.model.EventTypeFeed;
+import ru.yandex.practicum.filmorate.model.OperationFeed;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
@@ -22,13 +24,18 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
+    private final UserService userService;
 
     private long currentId;
 
-    public ReviewService(ReviewRepository reviewRepository, UserRepository userRepository, FilmRepository filmRepository) {
+    public ReviewService(ReviewRepository reviewRepository,
+                         UserRepository userRepository,
+                         FilmRepository filmRepository,
+                         UserService userService) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.filmRepository = filmRepository;
+        this.userService = userService;
     }
 
     public ReviewDto saveReview(NewReviewRequest request) {
@@ -43,6 +50,9 @@ public class ReviewService {
         review = reviewRepository.saveReview(review);
         log.info("Saved review {}", review);
         currentId = review.getId();
+
+        userService.addEvent(request.getUserId(), EventTypeFeed.REVIEW, OperationFeed.ADD, currentId);
+
         return ReviewMapper.mapToReviewDto(review);
     }
 
@@ -53,14 +63,19 @@ public class ReviewService {
                 .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
         reviewRepository.updateReview(updatedReview);
         log.info("Updated review {}", updatedReview);
+
+        userService.addEvent(request.getUserId(), EventTypeFeed.REVIEW, OperationFeed.UPDATE, request.getReviewId());
+
         return ReviewMapper.mapToReviewDto(updatedReview);
     }
 
     public void deleteReview(long id) {
         log.info("Deleting review with id {}", id);
-        reviewRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
+        Review review = reviewRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
+
+
         if (reviewRepository.deleteReview(id)) {
+            userService.addEvent(review.getUserId(), EventTypeFeed.REVIEW, OperationFeed.REMOVE, review.getId());
             log.info("Review deleted");
         } else {
             log.info("Review not deleted");
