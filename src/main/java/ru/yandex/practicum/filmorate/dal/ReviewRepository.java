@@ -27,7 +27,7 @@ public class ReviewRepository extends BaseRepository<Review> {
     private static final String ADD_DISLIKE_TO_REVIEW = "UPDATE REVIEWS SET useful = useful -2 WHERE id = ?";
     private static final String DELETE_REVIEW = "DELETE FROM REVIEWS WHERE id = ?";
     private static final String FIND_REVIEW_BY_ID = "SELECT * FROM REVIEWS WHERE id = ?";
-    private static final String FIND_ALL_FILMS_REVIEWS = "SELECT * FROM REVIEWS WHERE film_id = ? LIMIT ?";
+    private static final String FIND_ALL_FILMS_REVIEWS = "SELECT * FROM REVIEWS WHERE film_id = ? ORDER BY useful LIMIT ?";
 
     public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
         super(jdbc, mapper);
