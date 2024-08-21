@@ -3,13 +3,13 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FilmGenreRepository;
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.filmRequest.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.filmRequest.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.dal.FilmStorage;
 
 import java.util.List;
 
@@ -30,6 +30,14 @@ public class FilmService {
         this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
+    }
+
+    public List<FilmDto> getRecommendedFilms(long userId) {
+        log.info("Getting recommended films to user {}", userId);
+        return filmRepository.getRecommendedFilms(userId)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
     }
 
     public FilmDto createFilm(NewFilmRequest request) {
