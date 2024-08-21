@@ -9,7 +9,9 @@ import ru.yandex.practicum.filmorate.dto.filmRequest.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.filmRequest.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.model.EventTypeFeed;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.OperationFeed;
 
 import java.util.List;
 
@@ -90,6 +92,7 @@ public class FilmService {
         filmRepository.findById(filmId).orElseThrow(() -> new EntityNotFoundException("Фильма с таким id не существует"));
         userService.getUserOrException(userId);
         filmRepository.addFilmLike(userId, filmId);
+        userService.addEvent(userId, EventTypeFeed.LIKE, OperationFeed.ADD, filmId);
         log.info("Added like with id: {}, user id {}", filmId, userId);
 
     }
@@ -99,6 +102,7 @@ public class FilmService {
         isFilmExist(filmId);
         userService.getUserOrException(userId);
         filmRepository.deleteLike(userId, filmId);
+        userService.addEvent(userId, EventTypeFeed.LIKE, OperationFeed.REMOVE, filmId);
         log.info("Deleted like from film {}, user {}", filmId, userId);
     }
 

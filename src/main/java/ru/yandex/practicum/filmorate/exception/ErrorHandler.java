@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,5 +39,12 @@ public class ErrorHandler {
     public ErrorResponse handleMethodArgumentNotValidException(final Exception e) {
         log.debug("MethodArgumentNotValidException: {},status internal error 400", e.getMessage());
         return new ErrorResponse(e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler
+    public ErrorResponse handleDuplicateKeyException(final DuplicateKeyException e) {
+        log.debug("Exception: {}, trying to set duplicate key in db",e.getMessage());
+        return new ErrorResponse("Попытка вставить в таблицу уже существующие строки");
     }
 }
