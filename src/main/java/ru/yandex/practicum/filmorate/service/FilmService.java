@@ -34,6 +34,14 @@ public class FilmService {
         this.genreService = genreService;
     }
 
+    public List<FilmDto> getRecommendedFilms(long userId) {
+        log.info("Getting recommended films to user {}", userId);
+        return filmRepository.getRecommendedFilms(userId)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
     public FilmDto createFilm(NewFilmRequest request) {
         log.info("Creating film: {}", request);
         mpaService.isMpaExist(request.getMpa().getId());
