@@ -23,4 +23,5 @@ public interface FilmStorage {
 
     void deleteLike(long userId, long filmId);
 
+    List<Film> getFilmsByParams(String query, String param);
 }

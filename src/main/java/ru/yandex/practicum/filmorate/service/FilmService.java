@@ -104,4 +104,18 @@ public class FilmService {
         filmRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Фильм в данным айди не найден"));
     }
+
+    public List<FilmDto> getFilmsByParams(String query, List<String> params) {
+        if (params.size() == 1) {
+            if (params.getFirst().equals("title")) {
+                return filmRepository.getFilmsByParams(query,"u.name")
+                        .stream()
+                        .map(FilmMapper::mapToFilmDto)
+                        .toList();
+            } else if (params.getFirst().equals("director")) {
+
+            }
+        }
+        return null;
+    }
 }

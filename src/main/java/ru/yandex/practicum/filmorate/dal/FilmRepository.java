@@ -2,12 +2,12 @@ package ru.yandex.practicum.filmorate.dal;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmWithGenresAndLikesExtractor;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
@@ -67,13 +67,15 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 fg.genre_id,
                 g.name
             ORDER BY like_count DESC
-            LIMIT ?
             """;
     private final FilmWithGenresAndLikesExtractor extractor;
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresAndLikesExtractor extractor) {
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresAndLikesExtractor extractor, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         super(jdbc, mapper);
         this.extractor = extractor;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     @Override
@@ -108,12 +110,23 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     public List<Film> getAllFilms() {
-        return findMany(FIND_ALL_QUERY,extractor);
+        return findMany(FIND_ALL_QUERY, extractor);
     }
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        return findMany(FIND_POPULAR_FILMS,extractor,count);
+        return findMany(FIND_POPULAR_FILMS + "LIMIT ?", extractor, count);
+    }
+
+    @Override
+    public List<Film> getFilmsByParams(String queryText, String param) {
+        String queryToSql = FIND_ALL_QUERY +
+                "WHERE " + param + " LIKE :queryText";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("queryText", "%" + queryText + "%");
+
+        return namedParameterJdbcTemplate.query(queryToSql, params, extractor);
     }
 
     @Override
