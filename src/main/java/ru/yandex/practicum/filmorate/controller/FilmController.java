@@ -39,9 +39,9 @@ public class FilmController {
 
     @GetMapping("/popular")
     public Collection<Film> getPopularFilms(
-            @RequestParam(value = "count", defaultValue = "10") @Positive int count,
-            @RequestParam(value = "genreId", required = false/*defaultValue = "0"*/) Long genreId,
-            @RequestParam(value = "year", required = false/*defaultValue = "0"*/) Integer year) {
+            @RequestParam(value = "count", defaultValue = "100") @Positive int count,
+            @RequestParam(value = "genreId", required = false) Long genreId,
+            @RequestParam(value = "year", required = false) Integer year) {
         return filmService.getPopularFilms(count, genreId, year);
     }
 
