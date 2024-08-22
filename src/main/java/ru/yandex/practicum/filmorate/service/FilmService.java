@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FilmGenreRepository;
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.filmRequest.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.filmRequest.UpdateFilmRequest;
@@ -10,7 +11,6 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.EventTypeFeed;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.model.OperationFeed;
 
 import java.util.List;
@@ -101,6 +101,12 @@ public class FilmService {
     public List<Film> getPopularFilms(int count) {
         log.info("Getting popular films");
         return filmRepository.getPopularFilms(count);
+    }
+
+    public List<FilmDto> getCommonFilms(long userId, long friendId) {
+        log.info("GET /films/common?userId={}&friendId={}", userId, friendId);
+        userService.isUsersExists(userId, friendId);
+        return filmRepository.getCommonFilms(userId, friendId).stream().map(FilmMapper::mapToFilmDto).toList();
     }
 
     private void isFilmExist(long id) {

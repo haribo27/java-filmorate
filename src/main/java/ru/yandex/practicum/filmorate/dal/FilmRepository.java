@@ -69,6 +69,29 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             ORDER BY like_count DESC
             LIMIT ?
             """;
+    private static final String FIND_COMMON_FILMS_QUERY = """
+            SELECT
+                u.id AS film_id,
+                u.name AS film_name,
+                u.description AS film_description,
+                u.release_date AS film_release_date,
+                u.duration AS film_duration,
+                u.rating AS film_rating_id,
+                r.name AS film_rating_name,
+                fg.genre_id AS film_genre_id,
+                g.name AS film_genre_name,
+                COUNT(l3.user_id) AS like_count
+            FROM films AS u
+            JOIN FILM_LIKES AS l1 ON u.id = l1.film_id
+            JOIN FILM_LIKES AS l2 ON u.id = l2.film_id
+            LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
+            LEFT JOIN genre AS g ON fg.genre_id = g.id
+            LEFT JOIN FILM_LIKES AS l3 ON u.id = l3.film_id
+            LEFT JOIN rating AS r ON u.rating = r.id
+            WHERE l1.user_id = ? AND l2.user_id = ?
+            GROUP BY u.id, r.name
+            ORDER BY like_count DESC;
+            """;
     private final FilmWithGenresAndLikesExtractor extractor;
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresAndLikesExtractor extractor) {
@@ -129,5 +152,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public void deleteLike(long userId, long filmId) {
         update(DELETE_LIKE_FROM_FILM, userId, filmId);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return findMany(FIND_COMMON_FILMS_QUERY, extractor, userId, friendId);
     }
 }
