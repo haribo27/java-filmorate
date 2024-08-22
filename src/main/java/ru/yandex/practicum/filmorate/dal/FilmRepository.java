@@ -181,10 +181,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     @Override
-
     public List<Film> getCommonFilms(long userId, long friendId) {
         return findMany(FIND_COMMON_FILMS_QUERY, extractor, userId, friendId);
     }
+
     public List<Film> getRecommendedFilms(long userId) {
         Long matchUserId;
         String findMatchUserIdSql = "WITH UserLikes AS (" +
