@@ -106,9 +106,9 @@ public class FilmService {
         log.info("Deleted like from film {}, user {}", filmId, userId);
     }
 
-    public List<Film> getPopularFilms(int count) {
+    public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
         log.info("Getting popular films");
-        return filmRepository.getPopularFilms(count);
+        return filmRepository.getPopularFilms(count, genreId, year);
     }
 
     public List<FilmDto> getCommonFilms(long userId, long friendId) {
