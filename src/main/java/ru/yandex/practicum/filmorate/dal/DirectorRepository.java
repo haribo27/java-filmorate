@@ -22,16 +22,20 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
             "WHERE d.id = ?";
     private static final String UPDATE_QUERY = "UPDATE directors SET name = ? WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM directors WHERE id = ?";
-    private final FilmWithGenresAndLikesExtractor extractor;
-
-    public DirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper, FilmWithGenresAndLikesExtractor extractor) {
+    private static final String INSERT_QUERY = "INSERT INTO directors (name)" +
+            "VALUES (?)";
+    public DirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper) {
         super(jdbc, mapper);
-        this.extractor = extractor;
     }
 
     @Override
     public Director createDirector(Director director) {
-        throw new UnsupportedOperationException();
+        long id = insert(
+                INSERT_QUERY,
+                director.getName()
+        );
+        director.setId(id);
+        return director;
     }
 
     @Override
@@ -50,7 +54,7 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
 
     @Override
     public List<Director> getAllDirector() {
-        return findMany(FIND_ALL_QUERY, extractor);
+        return findMany(FIND_ALL_QUERY);
     }
 
     @Override

@@ -23,12 +23,15 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 r.name AS film_rating_name,
                 fg.genre_id AS film_genre_id,
                 g.name AS film_genre_name,
-                fi.user_id AS liked_by_user_id
+                fi.user_id AS liked_by_user_id,
+                fd.director_id AS film_director_id
             FROM films AS u
             LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
             LEFT JOIN genre AS g ON fg.genre_id = g.id
             LEFT JOIN FILM_LIKES AS fi ON u.id = fi.film_id
             LEFT JOIN rating AS r ON u.rating = r.id
+            LEFT JOIN FILM_DIRECTOR AS fd ON u.id = fd.film_id
+            LEFT JOIN directors AS d ON fd.director_id = g.id
             """;
     private static final String FIND_BY_ID_QUERY = FIND_ALL_QUERY +
             "WHERE u.id = ?";
@@ -108,12 +111,12 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     public List<Film> getAllFilms() {
-        return findMany(FIND_ALL_QUERY,extractor);
+        return findMany(FIND_ALL_QUERY, extractor);
     }
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        return findMany(FIND_POPULAR_FILMS,extractor,count);
+        return findMany(FIND_POPULAR_FILMS, extractor, count);
     }
 
     @Override

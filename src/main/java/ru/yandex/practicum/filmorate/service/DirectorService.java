@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.DirectorStorage;
 import ru.yandex.practicum.filmorate.dto.DirectorDto;
+import ru.yandex.practicum.filmorate.dto.directorRequest.NewDirectorRequest;
 import ru.yandex.practicum.filmorate.dto.directorRequest.UpdateDirectorRequest;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.DirectorMapper;
@@ -19,9 +20,10 @@ public class DirectorService {
 
     private final DirectorStorage directorRepository;
 
-    public DirectorDto createDirector(UpdateDirectorRequest request) {
+    public DirectorDto createDirector(NewDirectorRequest request) {
         log.info("Creating director: {}", request);
         Director director = DirectorMapper.mapToDirector(request);
+        log.info("Mapped director: {}",director);
         director = directorRepository.createDirector(director);
         log.info("Created new director: {}", director);
         return DirectorMapper.mapToDirectorDto(director);
