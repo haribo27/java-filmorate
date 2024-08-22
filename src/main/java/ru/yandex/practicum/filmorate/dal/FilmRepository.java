@@ -56,7 +56,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             LEFT JOIN genre AS g ON fg.genre_id = g.id
             LEFT JOIN rating AS r ON u.rating = r.id
             LEFT JOIN FILM_LIKES AS fl ON u.id = fl.film_id
-                        
             """;
     private final FilmWithGenresAndLikesExtractor extractor;
 
