@@ -56,18 +56,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             LEFT JOIN genre AS g ON fg.genre_id = g.id
             LEFT JOIN rating AS r ON u.rating = r.id
             LEFT JOIN FILM_LIKES AS fl ON u.id = fl.film_id
-            GROUP BY
-                u.id,
-                u.name,
-                u.description,
-                u.release_date,
-                u.duration,
-                u.rating,
-                r.name,
-                fg.genre_id,
-                g.name
-            ORDER BY like_count DESC
-            LIMIT ?
+                        
             """;
     private final FilmWithGenresAndLikesExtractor extractor;
 
@@ -108,12 +97,34 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     public List<Film> getAllFilms() {
-        return findMany(FIND_ALL_QUERY,extractor);
+        return findMany(FIND_ALL_QUERY, extractor);
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-        return findMany(FIND_POPULAR_FILMS,extractor,count);
+    public List<Film> getPopularFilms(int count, long genreId, int year) {
+        String groupAndOrderSql = """
+                    GROUP BY
+                    u.id,
+                    u.name,
+                    u.description,
+                    u.release_date,
+                    u.duration,
+                    u.rating,
+                    r.name,
+                    fg.genre_id,
+                    g.name
+                ORDER BY like_count DESC
+                LIMIT ?""";
+        String genreParam = "fg.genre_id = " + genreId;
+        String yearParam = "u.release_date LIKE " + "'%" + year + "%'";
+        if (genreId == 0 && year == 0) {
+            return findMany(FIND_POPULAR_FILMS + groupAndOrderSql, extractor, count);
+        } else if (genreId > 0 && year == 0) {
+            return findMany(FIND_POPULAR_FILMS + "WHERE " + genreParam + groupAndOrderSql, extractor, count);
+        } else if (genreId == 0 && year > 0) {
+            return findMany(FIND_POPULAR_FILMS + "WHERE " + yearParam + groupAndOrderSql, extractor, count);
+        } else
+            return findMany(FIND_POPULAR_FILMS + "WHERE " + genreParam + " AND " + yearParam + groupAndOrderSql, extractor, count);
     }
 
     @Override

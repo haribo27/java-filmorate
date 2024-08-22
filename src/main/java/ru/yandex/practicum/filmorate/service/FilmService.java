@@ -98,9 +98,9 @@ public class FilmService {
         log.info("Deleted like from film {}, user {}", filmId, userId);
     }
 
-    public List<Film> getPopularFilms(int count) {
+    public List<Film> getPopularFilms(int count, long genreId, int year) {
         log.info("Getting popular films");
-        return filmRepository.getPopularFilms(count);
+        return filmRepository.getPopularFilms(count, genreId, year);
     }
 
     private void isFilmExist(long id) {
