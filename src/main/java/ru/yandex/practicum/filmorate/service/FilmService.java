@@ -111,6 +111,12 @@ public class FilmService {
         return filmRepository.getPopularFilms(count);
     }
 
+    public List<FilmDto> getCommonFilms(long userId, long friendId) {
+        log.info("GET /films/common?userId={}&friendId={}", userId, friendId);
+        userService.isUsersExists(userId, friendId);
+        return filmRepository.getCommonFilms(userId, friendId).stream().map(FilmMapper::mapToFilmDto).toList();
+    }
+
     private void isFilmExist(long id) {
         log.debug("Check film exist with id {}", id);
         filmRepository.findById(id)
