@@ -4,6 +4,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmWithGenresAndLikesExtractor;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
@@ -72,6 +73,45 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             ORDER BY like_count DESC
             LIMIT ?
             """;
+    private static final String SELECT_ALL_DIRECTOR_FILM_BY_LIKE = """
+            SELECT f.*,
+               mr.NAME AS map_name,
+               array_agg(g.ID) AS genre_id,
+               array_agg(g.NAME) AS genre_name,
+               array_agg(ul.USER_ID) AS like_id,
+               array_agg(d.ID) AS director_id,
+               array_agg(d.NAME) AS director_name
+               COUNT(DISTINCT ul.USER_ID) AS like_count
+            FROM films AS f
+            LEFT JOIN MPA_RATING AS mr ON f.MAP_RATING_ID = mr.ID
+            LEFT JOIN FILM_GENRE AS fg ON f.ID = fg.FILM_ID
+            LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.ID
+            LEFT JOIN USER_LIKES AS ul ON ul.FILM_ID = f.ID
+            LEFT JOIN DIRECTOR_FILM AS df ON df.FILM_ID = f.ID
+            LEFT JOIN DIRECTOR AS d ON df.DIRECTOR_ID = d.ID
+            WHERE d.ID = ?
+            GROUP BY f.ID, mr.NAME
+            ORDER BY like_count DESC
+            """;
+    private static final String SELECT_ALL_DIRECTOR_FILM_BY_YEAR = """
+            SELECT f.*,
+               mr.NAME AS map_name,
+               array_agg(g.ID) AS genre_id,
+               array_agg(g.NAME) AS genre_name,
+               array_agg(ul.USER_ID) AS like_id,
+               array_agg(d.ID) AS director_id,
+               array_agg(d.NAME) AS director_name
+            FROM films AS f
+            LEFT JOIN MPA_RATING AS mr ON f.MAP_RATING_ID = mr.ID
+            LEFT JOIN FILM_GENRE AS fg ON f.ID = fg.FILM_ID
+            LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.ID
+            LEFT JOIN USER_LIKES AS ul ON ul.FILM_ID = f.ID
+            LEFT JOIN DIRECTOR_FILM AS df ON df.FILM_ID = f.ID
+            LEFT JOIN DIRECTOR AS d ON df.DIRECTOR_ID = d.ID
+            WHERE d.ID = ?
+            GROUP BY f.ID, mr.NAME
+            ORDER BY f.release_date
+            """;
     private final FilmWithGenresAndLikesExtractor extractor;
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresAndLikesExtractor extractor) {
@@ -132,5 +172,13 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public void deleteLike(long userId, long filmId) {
         update(DELETE_LIKE_FROM_FILM, userId, filmId);
+    }
+    @Override
+    public List<Film> getDirectorFilms(Long id, String sortBy) {
+        return switch (sortBy) {
+            case "likes" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY_LIKE, id).stream().toList();
+            case "year" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY_YEAR, id).stream().toList();
+            default -> throw new EntityNotFoundException(String.format("Sored by %s not exist", sortBy));
+        };
     }
 }

@@ -22,20 +22,22 @@ public class FilmService {
     private final UserService userService;
     private final MpaService mpaService;
     private final GenreService genreService;
+    private final DirectorService directorService;
 
-
-    public FilmService(FilmStorage filmRepository, FilmGenreRepository filmGenreRepository, UserService userService, MpaService mpaService, GenreService genreService) {
+    public FilmService(FilmStorage filmRepository, FilmGenreRepository filmGenreRepository, UserService userService, MpaService mpaService, GenreService genreService, DirectorService directorService) {
         this.filmRepository = filmRepository;
         this.filmGenreRepository = filmGenreRepository;
         this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
+        this.directorService = directorService;
     }
 
     public FilmDto createFilm(NewFilmRequest request) {
         log.info("Creating film: {}", request);
         mpaService.isMpaExist(request.getMpa().getId());
         genreService.isGenresExists(request.getGenres());
+        directorService.isDirectorExist(request.getDirectors());
         Film film = FilmMapper.mapToFilm(request);
         film = filmRepository.createFilm(film);
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
@@ -103,5 +105,8 @@ public class FilmService {
         log.debug("Check film exist with id {}", id);
         filmRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Фильм в данным айди не найден"));
+    }
+    public List<FilmDto> getDirectorFilms(Long id, String sortBy){
+        return filmRepository.getDirectorFilms(id,sortBy).stream().map(FilmMapper::mapToFilmDto).toList();
     }
 }

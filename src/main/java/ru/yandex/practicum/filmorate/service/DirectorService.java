@@ -8,10 +8,12 @@ import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.directorRequest.NewDirectorRequest;
 import ru.yandex.practicum.filmorate.dto.directorRequest.UpdateDirectorRequest;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.DirectorMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -23,7 +25,7 @@ public class DirectorService {
     public DirectorDto createDirector(NewDirectorRequest request) {
         log.info("Creating director: {}", request);
         Director director = DirectorMapper.mapToDirector(request);
-        log.info("Mapped director: {}",director);
+        log.info("Mapped director: {}", director);
         director = directorRepository.createDirector(director);
         log.info("Created new director: {}", director);
         return DirectorMapper.mapToDirectorDto(director);
@@ -65,5 +67,15 @@ public class DirectorService {
         log.debug("Check director exist with id {}", id);
         directorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Директор в данным айди не найден"));
+    }
+
+    public void isDirectorExist(Set<Director> directors) {
+        if (directors == null) return;
+        log.info("Check if directors exists: {}", directors);
+        try {
+            directors.forEach(director -> getDirector(director.getId()));
+        } catch (EntityNotFoundException e) {
+            throw new ValidationException("Жанра с таким айди не существует");
+        }
     }
 }
