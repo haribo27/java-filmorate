@@ -149,7 +149,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     @Override
-    public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
+    public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
         String groupAndOrderSql = """
                     GROUP BY
                     u.id,
@@ -161,18 +161,20 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                     r.name,
                     fg.genre_id,
                     g.name
-                ORDER BY like_count DESC
-                LIMIT ?""";
+                ORDER BY like_count DESC""";
+        String limit = " LIMIT " + count;
         String genreParam = "fg.genre_id = " + genreId;
         String yearParam = "u.release_date LIKE " + "'%" + year + "%'";
+        if (count != null)
+            groupAndOrderSql += limit;
         if (genreId == null && year == null) {
-            return findMany(FIND_POPULAR_FILMS + groupAndOrderSql, extractor, count);
+            return findMany(FIND_POPULAR_FILMS + groupAndOrderSql, extractor);
         } else if (year == null) {
-            return findMany(FIND_POPULAR_FILMS + "WHERE " + genreParam + groupAndOrderSql, extractor, count);
+            return findMany(FIND_POPULAR_FILMS + "WHERE " + genreParam + groupAndOrderSql, extractor);
         } else if (genreId == null) {
-            return findMany(FIND_POPULAR_FILMS + "WHERE " + yearParam + groupAndOrderSql, extractor, count);
+            return findMany(FIND_POPULAR_FILMS + "WHERE " + yearParam + groupAndOrderSql, extractor);
         } else
-            return findMany(FIND_POPULAR_FILMS + "WHERE " + genreParam + " AND " + yearParam + groupAndOrderSql, extractor, count);
+            return findMany(FIND_POPULAR_FILMS + "WHERE " + genreParam + " AND " + yearParam + groupAndOrderSql, extractor);
     }
 
     @Override
