@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.dto.MpaDto;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.MpaMapper;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
 
@@ -33,6 +34,11 @@ public class MpaService {
         return mpaRepository.getMpaById(id)
                 .map(MpaMapper::mapMpaToMpaDto)
                 .orElseThrow(() -> new EntityNotFoundException("Рейтинг с таким id не найден"));
+    }
+
+    public Mpa get(int id) {
+        return mpaRepository.getMpaById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Рейтинг с id=%d не найден", id)));
     }
 
     public void isMpaExist(long id) {

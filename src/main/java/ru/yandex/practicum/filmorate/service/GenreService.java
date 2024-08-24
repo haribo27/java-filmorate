@@ -46,4 +46,7 @@ public class GenreService {
             throw new ValidationException("Жанра с таким айди не существует");
         }
     }
+    public List<Genre> getFilmGenres(Long id){
+        return genreRepository.getFilmGenres(id);
+    }
 }

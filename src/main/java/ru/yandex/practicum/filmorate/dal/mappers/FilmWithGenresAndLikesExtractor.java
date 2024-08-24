@@ -47,13 +47,13 @@ public class FilmWithGenresAndLikesExtractor implements ResultSetExtractor<List<
                 genre.setName(rs.getString("film_genre_name"));
                 film.getGenres().add(genre);
             }
-            long directorId = rs.getLong("film_director_id");
-            if (directorId > 0) {
-                Director director = new Director();
-                director.setId(genreId);
-                director.setName(rs.getString("film_director_name"));
-                film.getDirectors().add(director);
-            }
+//            long directorId = rs.getLong("film_director_id");
+//            if (directorId > 0) {
+//                Director director = new Director();
+//                director.setId(genreId);
+//                director.setName(rs.getString("film_director_name"));
+//                film.getDirectors().add(director);
+//            }
         }
         return new ArrayList<>(filmMap.values());
     }

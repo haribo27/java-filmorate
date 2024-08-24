@@ -33,7 +33,6 @@ public class DirectorController {
         return directorService.getDirector(id);
     }
 
-
     @PostMapping
     public DirectorDto createDirector(@Valid @RequestBody NewDirectorRequest request) {
         return directorService.createDirector(request);

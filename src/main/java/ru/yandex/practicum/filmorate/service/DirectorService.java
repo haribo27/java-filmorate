@@ -12,8 +12,10 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.DirectorMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -35,7 +37,7 @@ public class DirectorService {
         log.info("Updating director: {}", request);
         Director updatedDirector = directorRepository.findById(request.getId())
                 .map(director -> DirectorMapper.updateDirectorFields(director, request))
-                .orElseThrow(() -> new EntityNotFoundException("Film not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Director not found"));
         directorRepository.updateDirector(updatedDirector);
         log.info("Director updated: {}", updatedDirector);
         return DirectorMapper.mapToDirectorDto(updatedDirector);
@@ -50,15 +52,18 @@ public class DirectorService {
 
     public List<DirectorDto> getAllDirectors() {
         log.info("Getting all directors");
-        return directorRepository.getAllDirector()
+        List<DirectorDto> directorDtos = directorRepository.getAllDirector()
                 .stream()
                 .map(DirectorMapper::mapToDirectorDto)
                 .toList();
+        log.info("Коллекция Директоров успешно передана.");
+        return directorDtos;
     }
 
     public DirectorDto getDirector(long id) {
+        log.info("Попытка получить Директора с id={}.", id);
         Director director = directorRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Директор с таким id не существует"));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Директор с таким id=%d не существует", id)));
         log.info("Getting director : {}", director);
         return DirectorMapper.mapToDirectorDto(director);
     }
@@ -66,7 +71,7 @@ public class DirectorService {
     private void isDirectorExist(long id) {
         log.debug("Check director exist with id {}", id);
         directorRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Директор в данным айди не найден"));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Директор с таким id=%d не существует", id)));
     }
 
     public void isDirectorExist(Set<Director> directors) {
@@ -76,6 +81,22 @@ public class DirectorService {
             directors.forEach(director -> getDirector(director.getId()));
         } catch (EntityNotFoundException e) {
             throw new ValidationException("Жанра с таким айди не существует");
+        }
+    }
+    // Получаем список id всех режиссеров
+    public Collection<Long> getAllDirectorsIds() {
+        return directorRepository.getAllDirector().stream().map(Director::getId).collect(Collectors.toList());
+    }
+
+    // Получаем список режиссеров по id фильма
+    public Collection<Director> getAllDirectorsByFilmId(Long id) {
+        return directorRepository.findAllByFilmId(id).stream().toList();
+    }
+
+    // Добавляем режиссера к фильму в сводную таблицу
+    public void addDirectorToFilm(long id, Set<Director> directors) {
+        for (Director director : directors) {
+            directorRepository.insertIntoFilmDirector(id, director.getId());
         }
     }
 }

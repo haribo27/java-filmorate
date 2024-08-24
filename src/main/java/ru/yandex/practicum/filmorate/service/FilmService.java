@@ -8,10 +8,13 @@ import ru.yandex.practicum.filmorate.dto.filmRequest.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.filmRequest.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -106,7 +109,9 @@ public class FilmService {
         filmRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Фильм в данным айди не найден"));
     }
-    public List<FilmDto> getDirectorFilms(Long id, String sortBy){
-        return filmRepository.getDirectorFilms(id,sortBy).stream().map(FilmMapper::mapToFilmDto).toList();
+
+    public List<Film> getDirectorFilms(Long id, String sortBy){
+        return filmRepository.getDirectorFilms(id, sortBy);
     }
+
 }

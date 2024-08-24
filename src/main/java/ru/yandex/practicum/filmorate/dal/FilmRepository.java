@@ -57,8 +57,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                COUNT(fl.user_id) AS like_count
             FROM films AS u
             LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
-            LEFT JOIN genre AS g ON fg.genre_id = g.id
-            LEFT JOIN rating AS r ON u.rating = r.id
+            LEFT JOIN GENRE AS g ON fg.genre_id = g.id
+            LEFT JOIN RATING AS r ON u.rating = r.id
             LEFT JOIN FILM_LIKES AS fl ON u.id = fl.film_id
             GROUP BY
                 u.id,
@@ -73,45 +73,36 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             ORDER BY like_count DESC
             LIMIT ?
             """;
-    private static final String SELECT_ALL_DIRECTOR_FILM_BY_LIKE = """
-            SELECT f.*,
-               mr.NAME AS map_name,
-               array_agg(g.ID) AS genre_id,
-               array_agg(g.NAME) AS genre_name,
-               array_agg(ul.USER_ID) AS like_id,
-               array_agg(d.ID) AS director_id,
-               array_agg(d.NAME) AS director_name
-               COUNT(DISTINCT ul.USER_ID) AS like_count
-            FROM films AS f
-            LEFT JOIN MPA_RATING AS mr ON f.MAP_RATING_ID = mr.ID
-            LEFT JOIN FILM_GENRE AS fg ON f.ID = fg.FILM_ID
-            LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.ID
-            LEFT JOIN USER_LIKES AS ul ON ul.FILM_ID = f.ID
-            LEFT JOIN DIRECTOR_FILM AS df ON df.FILM_ID = f.ID
-            LEFT JOIN DIRECTOR AS d ON df.DIRECTOR_ID = d.ID
-            WHERE d.ID = ?
-            GROUP BY f.ID, mr.NAME
-            ORDER BY like_count DESC
+    private static final String SELECT_ALL_DIRECTOR_FILM_BY = """
+            SELECT
+               u.id AS film_id,
+               u.name AS film_name,
+               u.description AS film_description,
+               u.release_date AS film_release_date,
+               u.duration AS film_duration,
+               u.rating AS film_rating_id,
+               r.name AS film_rating_name,
+               fg.genre_id AS film_genre_id,
+               g.name AS film_genre_name,
+               COUNT(fl.user_id) AS like_count
+            FROM films AS u
+            LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
+            LEFT JOIN GENRE AS g ON fg.genre_id = g.id
+            LEFT JOIN RATING AS r ON u.rating = r.id
+            LEFT JOIN FILM_LIKES AS fl ON u.id = fl.film_id
+            JOIN FILM_DIRECTOR AS fd ON u.id = fd.film_id
+            GROUP BY
+                u.id,
+                u.name,
+                u.description,
+                u.release_date,
+                u.duration,
+                u.rating,
+                r.name,
+                fg.genre_id,
+                g.name
             """;
-    private static final String SELECT_ALL_DIRECTOR_FILM_BY_YEAR = """
-            SELECT f.*,
-               mr.NAME AS map_name,
-               array_agg(g.ID) AS genre_id,
-               array_agg(g.NAME) AS genre_name,
-               array_agg(ul.USER_ID) AS like_id,
-               array_agg(d.ID) AS director_id,
-               array_agg(d.NAME) AS director_name
-            FROM films AS f
-            LEFT JOIN MPA_RATING AS mr ON f.MAP_RATING_ID = mr.ID
-            LEFT JOIN FILM_GENRE AS fg ON f.ID = fg.FILM_ID
-            LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.ID
-            LEFT JOIN USER_LIKES AS ul ON ul.FILM_ID = f.ID
-            LEFT JOIN DIRECTOR_FILM AS df ON df.FILM_ID = f.ID
-            LEFT JOIN DIRECTOR AS d ON df.DIRECTOR_ID = d.ID
-            WHERE d.ID = ?
-            GROUP BY f.ID, mr.NAME
-            ORDER BY f.release_date
-            """;
+    //WHERE fd.DIRECTOR_ID = ?
     private final FilmWithGenresAndLikesExtractor extractor;
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresAndLikesExtractor extractor) {
@@ -155,7 +146,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     @Override
-    public List<Film> getPopularFilms(int count) {
+    public List<Film> getPopularFilms(long count) {
         return findMany(FIND_POPULAR_FILMS, extractor, count);
     }
 
@@ -173,12 +164,15 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     public void deleteLike(long userId, long filmId) {
         update(DELETE_LIKE_FROM_FILM, userId, filmId);
     }
+
     @Override
     public List<Film> getDirectorFilms(Long id, String sortBy) {
-        return switch (sortBy) {
-            case "likes" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY_LIKE, id).stream().toList();
-            case "year" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY_YEAR, id).stream().toList();
+        List<Film> films = switch (sortBy) {
+            case "likes" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY like_count DESC", id);
+            //case "year" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY u.release_date", id);
+            case "year" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY u.release_date");
             default -> throw new EntityNotFoundException(String.format("Sored by %s not exist", sortBy));
         };
+        return films;
     }
 }
