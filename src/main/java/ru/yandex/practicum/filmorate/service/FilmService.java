@@ -2,19 +2,18 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FilmDirectorRepository;
 import ru.yandex.practicum.filmorate.dal.FilmGenreRepository;
+import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.filmRequest.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.filmRequest.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.dal.FilmStorage;
-import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -22,14 +21,16 @@ public class FilmService {
 
     private final FilmStorage filmRepository;
     private final FilmGenreRepository filmGenreRepository;
+    private final FilmDirectorRepository filmDirectorRepository;
     private final UserService userService;
     private final MpaService mpaService;
     private final GenreService genreService;
     private final DirectorService directorService;
 
-    public FilmService(FilmStorage filmRepository, FilmGenreRepository filmGenreRepository, UserService userService, MpaService mpaService, GenreService genreService, DirectorService directorService) {
+    public FilmService(FilmStorage filmRepository, FilmGenreRepository filmGenreRepository, FilmDirectorRepository filmDirectorRepository, UserService userService, MpaService mpaService, GenreService genreService, DirectorService directorService) {
         this.filmRepository = filmRepository;
         this.filmGenreRepository = filmGenreRepository;
+        this.filmDirectorRepository = filmDirectorRepository;
         this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
@@ -45,6 +46,13 @@ public class FilmService {
         film = filmRepository.createFilm(film);
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             filmGenreRepository.saveGenre(film.getId(), film.getGenres().stream().toList());
+        }
+        if (film.getDirectors() == null) {
+            film.setDirectors(new HashSet<>());
+        }
+        if (film.getDirectors() != null) {
+            directorService.addDirectorToFilm(film.getId(), film.getDirectors());
+            film.setDirectors(new HashSet<>(directorService.getAllDirectorsByFilmId(film.getId())));
         }
         log.info("Created new film: {}", film);
         return FilmMapper.mapToFilmDto(film);
@@ -110,7 +118,7 @@ public class FilmService {
                 .orElseThrow(() -> new EntityNotFoundException("Фильм в данным айди не найден"));
     }
 
-    public List<Film> getDirectorFilms(Long id, String sortBy){
+    public List<Film> getDirectorFilms(Long id, String sortBy) {
         return filmRepository.getDirectorFilms(id, sortBy);
     }
 

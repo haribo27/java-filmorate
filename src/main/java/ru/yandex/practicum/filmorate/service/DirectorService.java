@@ -80,7 +80,7 @@ public class DirectorService {
         try {
             directors.forEach(director -> getDirector(director.getId()));
         } catch (EntityNotFoundException e) {
-            throw new ValidationException("Жанра с таким айди не существует");
+            throw new ValidationException("Директора с таким айди не существует");
         }
     }
     // Получаем список id всех режиссеров

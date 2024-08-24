@@ -80,7 +80,4 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
     public void insertIntoFilmDirector(long filmId, long directorId) {
         add(INSERT_FILM, filmId, directorId);
     }
-    public List<Director> getFilmDirectors(Long id) {
-        return findMany(GET_BY_FILM_ID, id);
-    }
 }

@@ -4,7 +4,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmWithGenresAndLikesExtractor;
+import ru.yandex.practicum.filmorate.dal.mappers.FilmWithGenresLikesAndDirectorsExtractor;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
@@ -32,14 +34,14 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             LEFT JOIN FILM_LIKES AS fi ON u.id = fi.film_id
             LEFT JOIN rating AS r ON u.rating = r.id
             LEFT JOIN FILM_DIRECTOR AS fd ON u.id = fd.film_id
-            LEFT JOIN directors AS d ON fd.director_id = g.id
+            LEFT JOIN directors AS d ON fd.director_id = d.id
             """;
     private static final String FIND_BY_ID_QUERY = FIND_ALL_QUERY +
-            "WHERE u.id = ?";
+                                                   "WHERE u.id = ?";
     private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, rating)" +
-            "VALUES (?, ?, ?, ?, ?)";
+                                               "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?," +
-            " release_date = ?, duration = ? WHERE id = ?";
+                                               " release_date = ?, duration = ? WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
     private static final String INSERT_FILM_LIKE = "INSERT INTO FILM_LIKES (user_id, film_id) VALUES (?, ?)";
     private static final String DELETE_LIKE_FROM_FILM = "DELETE FROM FILM_LIKES WHERE user_id = ? AND film_id = ?";
@@ -84,13 +86,17 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                r.name AS film_rating_name,
                fg.genre_id AS film_genre_id,
                g.name AS film_genre_name,
+               fd.director_id AS film_director_id,
+               d.name AS film_director_name,
                COUNT(fl.user_id) AS like_count
             FROM films AS u
             LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
             LEFT JOIN GENRE AS g ON fg.genre_id = g.id
             LEFT JOIN RATING AS r ON u.rating = r.id
             LEFT JOIN FILM_LIKES AS fl ON u.id = fl.film_id
-            JOIN FILM_DIRECTOR AS fd ON u.id = fd.film_id
+            LEFT JOIN FILM_DIRECTOR AS fd ON u.id = fd.film_id
+            LEFT JOIN DIRECTORS AS d ON d.id = fd.director_id
+            WHERE fd.DIRECTOR_ID = ?
             GROUP BY
                 u.id,
                 u.name,
@@ -100,14 +106,17 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 u.rating,
                 r.name,
                 fg.genre_id,
-                g.name
+                g.name,
+                fd.director_id,
+                d.name
             """;
-    //WHERE fd.DIRECTOR_ID = ?
     private final FilmWithGenresAndLikesExtractor extractor;
+    private final FilmWithGenresLikesAndDirectorsExtractor extractorDirector;
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresAndLikesExtractor extractor) {
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresAndLikesExtractor extractor, FilmWithGenresLikesAndDirectorsExtractor extractorDirector) {
         super(jdbc, mapper);
         this.extractor = extractor;
+        this.extractorDirector = extractorDirector;
     }
 
     @Override
@@ -134,6 +143,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 film.getDuration(),
                 film.getId()
         );
+        delete("DELETE FROM film_director WHERE film_id = ?", film.getId());
+        for (Director director : film.getDirectors()) {
+            update("INSERT INTO FILM_DIRECTOR (film_id, director_id) VALUES (?,?)", film.getId(), director.getId());
+        }
     }
 
     @Override
@@ -168,9 +181,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public List<Film> getDirectorFilms(Long id, String sortBy) {
         List<Film> films = switch (sortBy) {
-            case "likes" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY like_count DESC", id);
-            //case "year" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY u.release_date", id);
-            case "year" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY u.release_date");
+            case "likes" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY like_count DESC",extractorDirector, id);
+            case "year" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY film_release_date",extractorDirector, id);
             default -> throw new EntityNotFoundException(String.format("Sored by %s not exist", sortBy));
         };
         return films;
