@@ -21,7 +21,7 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
             WHERE film_id = ? ORDER BY d.id
             """;
     private static final String FIND_ALL_QUERY = "SELECT * FROM directors ORDER BY id";
-    private static final String INSERT_FILM= "INSERT INTO film_director (film_id, director_id) VALUES(?,?)";
+    private static final String INSERT_FILM = "INSERT INTO film_director (film_id, director_id) VALUES(?,?)";
     private static final String GET_BY_ID = "SELECT * FROM directors WHERE id = ?";
     private static final String UPDATE_QUERY = "UPDATE directors SET name = ? WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM directors WHERE id = ?";
@@ -32,6 +32,7 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
             INNER JOIN film_director fd on d.id = fd.director_id
             WHERE film_id = ?
             """;
+
     public DirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper) {
         super(jdbc, mapper);
     }

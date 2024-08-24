@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-
 import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -79,7 +78,7 @@ public class FilmController {
     @GetMapping("/director/{directorId}")
     public List<Film> getDirectorFilms(
             @Valid @PathVariable("directorId") final Long id,
-            @RequestParam final String sortBy){
+            @RequestParam final String sortBy) {
         return filmService.getDirectorFilms(id, sortBy);
     }
 }

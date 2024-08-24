@@ -83,6 +83,7 @@ public class DirectorService {
             throw new ValidationException("Директора с таким айди не существует");
         }
     }
+
     // Получаем список id всех режиссеров
     public Collection<Long> getAllDirectorsIds() {
         return directorRepository.getAllDirector().stream().map(Director::getId).collect(Collectors.toList());

@@ -22,7 +22,7 @@ public class FilmDirectorRepository extends BaseRepository<Director> {
 
 
     public void saveDirector(Long filmId, List<Director> directors) {
-        List<Director> filmDirector =new ArrayList<>(directors);
+        List<Director> filmDirector = new ArrayList<>(directors);
         this.jdbc.batchUpdate(
                 INSERT_QUERY,
                 new BatchPreparedStatementSetter() {

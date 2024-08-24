@@ -12,16 +12,16 @@ import java.util.Optional;
 public class ReviewRepository extends BaseRepository<Review> implements ReviewStorage {
 
     private static final String INSERT_REVIEW = "INSERT INTO REVIEWS (content, is_positive," +
-            " user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
+                                                " user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
     private static final String FIND_ALL = "SELECT * FROM REVIEWS";
     private static final String INSERT_REVIEWS_LIKE = "INSERT INTO REVIEWS_LIKES " +
-            "(user_id, review_id, is_like) VALUES (?, ?, ?)";
+                                                      "(user_id, review_id, is_like) VALUES (?, ?, ?)";
     private static final String UPDATE_REVIEWS_LIKES_ON_DISLIKE = "UPDATE REVIEWS_LIKES SET IS_LIKE = false " +
-            "where user_id = ? AND review_id = ?";
+                                                                  "where user_id = ? AND review_id = ?";
     private static final String UPDATE_REVIEW = "UPDATE REVIEWS SET content = ?, is_positive = ?, user_id = ?," +
-            " film_id = ?, useful = ? WHERE id = ?";
+                                                " film_id = ?, useful = ? WHERE id = ?";
     private static final String DELETE_REVIEW_LIKE = "DELETE FROM REVIEWS_LIKES WHERE " +
-            "user_id = ? AND review_id = ? AND is_like = ?";
+                                                     "user_id = ? AND review_id = ? AND is_like = ?";
     private static final String UPDATE_REVIEWS_INCREMENT_USEFUL = "UPDATE REVIEWS SET useful = useful + 1 WHERE id = ?";
     private static final String UPDATE_REVIEWS_DECREMENT_USEFUL = "UPDATE REVIEWS SET useful = useful -1 WHERE id = ?";
     private static final String ADD_DISLIKE_TO_REVIEW = "UPDATE REVIEWS SET useful = useful -2 WHERE id = ?";

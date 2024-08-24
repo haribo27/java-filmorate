@@ -126,26 +126,26 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             """;
 
     private static final String FIND_RECOMMENDED_FILMS = "WITH SimilarUserFilms AS (" +
-            "    SELECT fl.FILM_ID FROM PUBLIC.FILM_LIKES fl WHERE fl.USER_ID = ?" +
-            "), UserFilms AS (" +
-            "    SELECT FILM_ID FROM PUBLIC.FILM_LIKES WHERE USER_ID = ?" +
-            ")" +
-            "SELECT u.ID AS film_id, " +
-            "       u.NAME AS film_name, " +
-            "       u.DESCRIPTION AS film_description, " +
-            "       u.RELEASE_DATE AS film_release_date, " +
-            "       u.DURATION AS film_duration, " +
-            "       u.RATING AS film_rating_id, " +
-            "       r.NAME AS film_rating_name, " +
-            "       fg.GENRE_ID AS film_genre_id, " +
-            "       g.NAME AS film_genre_name " +
-            "FROM PUBLIC.FILMS u " +
-            "JOIN SimilarUserFilms suf ON u.ID = suf.FILM_ID " +
-            "LEFT JOIN UserFilms uf ON u.ID = uf.FILM_ID " +
-            "LEFT JOIN PUBLIC.FILM_GENRE fg ON u.ID = fg.FILM_ID " +
-            "LEFT JOIN PUBLIC.GENRE g ON fg.GENRE_ID = g.ID " +
-            "LEFT JOIN PUBLIC.RATING r ON u.RATING = r.ID " +
-            "WHERE uf.FILM_ID IS NULL;";
+                                                         "    SELECT fl.FILM_ID FROM PUBLIC.FILM_LIKES fl WHERE fl.USER_ID = ?" +
+                                                         "), UserFilms AS (" +
+                                                         "    SELECT FILM_ID FROM PUBLIC.FILM_LIKES WHERE USER_ID = ?" +
+                                                         ")" +
+                                                         "SELECT u.ID AS film_id, " +
+                                                         "       u.NAME AS film_name, " +
+                                                         "       u.DESCRIPTION AS film_description, " +
+                                                         "       u.RELEASE_DATE AS film_release_date, " +
+                                                         "       u.DURATION AS film_duration, " +
+                                                         "       u.RATING AS film_rating_id, " +
+                                                         "       r.NAME AS film_rating_name, " +
+                                                         "       fg.GENRE_ID AS film_genre_id, " +
+                                                         "       g.NAME AS film_genre_name " +
+                                                         "FROM PUBLIC.FILMS u " +
+                                                         "JOIN SimilarUserFilms suf ON u.ID = suf.FILM_ID " +
+                                                         "LEFT JOIN UserFilms uf ON u.ID = uf.FILM_ID " +
+                                                         "LEFT JOIN PUBLIC.FILM_GENRE fg ON u.ID = fg.FILM_ID " +
+                                                         "LEFT JOIN PUBLIC.GENRE g ON fg.GENRE_ID = g.ID " +
+                                                         "LEFT JOIN PUBLIC.RATING r ON u.RATING = r.ID " +
+                                                         "WHERE uf.FILM_ID IS NULL;";
 
     private final FilmWithGenresAndLikesExtractor extractor;
     private final FilmWithGenresLikesAndDirectorsExtractor extractorDirector;
@@ -242,13 +242,13 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public List<Film> getDirectorFilms(Long id, String sortBy) {
         List<Film> films = switch (sortBy) {
-            case "likes" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY like_count DESC",extractorDirector, id);
-            case "year" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY film_release_date",extractorDirector, id);
+            case "likes" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY like_count DESC", extractorDirector, id);
+            case "year" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY film_release_date", extractorDirector, id);
             default -> throw new EntityNotFoundException(String.format("Sored by %s not exist", sortBy));
         };
         return films;
     }
-      
+
     @Override
     public List<Film> getCommonFilms(long userId, long friendId) {
         return findMany(FIND_COMMON_FILMS_QUERY, extractor, userId, friendId);
@@ -257,15 +257,15 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     public List<Film> getRecommendedFilms(long userId) {
         Long matchUserId;
         String findMatchUserIdSql = "WITH UserLikes AS (" +
-                "    SELECT FILM_ID FROM PUBLIC.FILM_LIKES WHERE USER_ID = " + userId +
-                "), MatchedUsers AS (" +
-                "    SELECT fl.USER_ID AS user_id, COUNT(fl.FILM_ID) AS matched_likes" +
-                "    FROM PUBLIC.FILM_LIKES fl" +
-                "    JOIN UserLikes ul ON fl.FILM_ID = ul.FILM_ID" +
-                "    WHERE fl.USER_ID <> " + userId +
-                "    GROUP BY fl.USER_ID" +
-                ")" +
-                "SELECT user_id FROM MatchedUsers ORDER BY matched_likes DESC LIMIT 1;";
+                                    "    SELECT FILM_ID FROM PUBLIC.FILM_LIKES WHERE USER_ID = " + userId +
+                                    "), MatchedUsers AS (" +
+                                    "    SELECT fl.USER_ID AS user_id, COUNT(fl.FILM_ID) AS matched_likes" +
+                                    "    FROM PUBLIC.FILM_LIKES fl" +
+                                    "    JOIN UserLikes ul ON fl.FILM_ID = ul.FILM_ID" +
+                                    "    WHERE fl.USER_ID <> " + userId +
+                                    "    GROUP BY fl.USER_ID" +
+                                    ")" +
+                                    "SELECT user_id FROM MatchedUsers ORDER BY matched_likes DESC LIMIT 1;";
         try {
             matchUserId = jdbc.queryForObject(findMatchUserIdSql, Long.class);
         } catch (DataAccessException e) {
