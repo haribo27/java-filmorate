@@ -85,6 +85,7 @@ public class DirectorService {
             throw new ValidationException("Директора с таким айди не существует");
         }
     }
+
     // Добавляем режиссера к фильму в сводную таблицу
     public void saveFilmsDirector(long id, Set<Director> directors) {
         filmDirectorRepository.saveDirector(id, directors.stream().toList());
