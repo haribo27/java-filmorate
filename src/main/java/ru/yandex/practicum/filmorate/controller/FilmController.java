@@ -65,6 +65,7 @@ public class FilmController {
         filmService.addFilmLike(id, userId);
     }
 
+    // изменения в schema.sql
     @DeleteMapping("/{id}")
     public void deleteFilm(@PathVariable long id) {
         filmService.deleteFilm(id);
