@@ -3,13 +3,19 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.EventFeedStorage;
+import ru.yandex.practicum.filmorate.dal.UserStorage;
+import ru.yandex.practicum.filmorate.dal.mappers.EventFeedMapper;
+import ru.yandex.practicum.filmorate.dto.EventDto;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.dto.userRequest.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.userRequest.UpdateUserRequest;
-import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.EventFeed;
+import ru.yandex.practicum.filmorate.model.EventTypeFeed;
+import ru.yandex.practicum.filmorate.model.OperationFeed;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.dal.UserStorage;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,9 +26,11 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserStorage userRepository;
+    private final EventFeedStorage eventFeedRepository;
 
-    public UserService(@Qualifier("UserRepo") UserStorage userRepository) {
+    public UserService(@Qualifier("UserRepo") UserStorage userRepository, @Qualifier("EventFeedRepo") EventFeedStorage eventFeedRepository) {
         this.userRepository = userRepository;
+        this.eventFeedRepository = eventFeedRepository;
     }
 
     public UserDto createUser(NewUserRequest request) {
@@ -71,6 +79,7 @@ public class UserService {
         userRepository.findUserById(fromUserId)
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь с таким id не найден"));
         userRepository.addFriend(fromUserId, toFriendId);
+        addEvent(fromUserId, EventTypeFeed.FRIEND, OperationFeed.ADD, toFriendId);
         log.info("Added friend {} to user {}", fromUserId, toFriendId);
     }
 
@@ -78,6 +87,7 @@ public class UserService {
         log.info("Delete friend {} from user {}", friendId, userId);
         isUsersExists(userId, friendId);
         int rows = userRepository.deleteFriend(userId, friendId);
+        addEvent(userId, EventTypeFeed.FRIEND, OperationFeed.REMOVE, friendId);
         if (rows > 1) {
             log.info("Deleted friend {} from user {}", friendId, userId);
         } else {
@@ -102,6 +112,27 @@ public class UserService {
                 .map(UserMapper::mapToUserDto)
                 .toList();
     }
+
+    public List<EventDto> getFeed(int id) {
+        log.info("GET /users/{}/feed ", id);
+        getUserOrException(id);
+        return eventFeedRepository.getByUserId(id)
+                .stream()
+                .map(EventFeedMapper::mapToEventDto)
+                .collect(Collectors.toList());
+    }
+
+    public void addEvent(long userId, EventTypeFeed eventTypeFeed, OperationFeed operationFeed, Long entityId) {
+        eventFeedRepository.save(
+                EventFeed.builder()
+                        .userId(userId)
+                        .eventType(eventTypeFeed)
+                        .operation(operationFeed)
+                        .entityId(entityId)
+                        .build()
+        );
+    }
+
 
     private void checkIfNameIsBlank(NewUserRequest request) {
         if (request.getName() == null || request.getName().isBlank()) {

@@ -39,8 +39,15 @@ public class FilmController {
 
     @GetMapping("/popular")
     public Collection<Film> getPopularFilms(
-            @RequestParam(value = "count", defaultValue = "10") @Positive int count) {
-        return filmService.getPopularFilms(count);
+            @RequestParam(value = "count", required = false) @Positive Integer count,
+            @RequestParam(value = "genreId", required = false) @Positive Long genreId,
+            @RequestParam(value = "year", required = false) @Positive Integer year) {
+        return filmService.getPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/common")
+    public Collection<FilmDto> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     @PostMapping
@@ -58,6 +65,7 @@ public class FilmController {
         filmService.addFilmLike(id, userId);
     }
 
+    // изменения в schema.sql
     @DeleteMapping("/{id}")
     public void deleteFilm(@PathVariable long id) {
         filmService.deleteFilm(id);

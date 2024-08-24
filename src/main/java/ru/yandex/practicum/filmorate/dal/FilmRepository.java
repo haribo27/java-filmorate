@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dal;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,18 +64,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             LEFT JOIN GENRE AS g ON fg.genre_id = g.id
             LEFT JOIN RATING AS r ON u.rating = r.id
             LEFT JOIN FILM_LIKES AS fl ON u.id = fl.film_id
-            GROUP BY
-                u.id,
-                u.name,
-                u.description,
-                u.release_date,
-                u.duration,
-                u.rating,
-                r.name,
-                fg.genre_id,
-                g.name
-            ORDER BY like_count DESC
-            LIMIT ?
             """;
     private static final String SELECT_ALL_DIRECTOR_FILM_BY = """
             SELECT
@@ -110,6 +100,53 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 fd.director_id,
                 d.name
             """;
+
+    private static final String FIND_COMMON_FILMS_QUERY = """
+            SELECT
+                u.id AS film_id,
+                u.name AS film_name,
+                u.description AS film_description,
+                u.release_date AS film_release_date,
+                u.duration AS film_duration,
+                u.rating AS film_rating_id,
+                r.name AS film_rating_name,
+                fg.genre_id AS film_genre_id,
+                g.name AS film_genre_name,
+                COUNT(l3.user_id) AS like_count
+            FROM films AS u
+            JOIN FILM_LIKES AS l1 ON u.id = l1.film_id
+            JOIN FILM_LIKES AS l2 ON u.id = l2.film_id
+            LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
+            LEFT JOIN genre AS g ON fg.genre_id = g.id
+            LEFT JOIN FILM_LIKES AS l3 ON u.id = l3.film_id
+            LEFT JOIN rating AS r ON u.rating = r.id
+            WHERE l1.user_id = ? AND l2.user_id = ?
+            GROUP BY u.id, r.name
+            ORDER BY like_count DESC;
+            """;
+
+    private static final String FIND_RECOMMENDED_FILMS = "WITH SimilarUserFilms AS (" +
+            "    SELECT fl.FILM_ID FROM PUBLIC.FILM_LIKES fl WHERE fl.USER_ID = ?" +
+            "), UserFilms AS (" +
+            "    SELECT FILM_ID FROM PUBLIC.FILM_LIKES WHERE USER_ID = ?" +
+            ")" +
+            "SELECT u.ID AS film_id, " +
+            "       u.NAME AS film_name, " +
+            "       u.DESCRIPTION AS film_description, " +
+            "       u.RELEASE_DATE AS film_release_date, " +
+            "       u.DURATION AS film_duration, " +
+            "       u.RATING AS film_rating_id, " +
+            "       r.NAME AS film_rating_name, " +
+            "       fg.GENRE_ID AS film_genre_id, " +
+            "       g.NAME AS film_genre_name " +
+            "FROM PUBLIC.FILMS u " +
+            "JOIN SimilarUserFilms suf ON u.ID = suf.FILM_ID " +
+            "LEFT JOIN UserFilms uf ON u.ID = uf.FILM_ID " +
+            "LEFT JOIN PUBLIC.FILM_GENRE fg ON u.ID = fg.FILM_ID " +
+            "LEFT JOIN PUBLIC.GENRE g ON fg.GENRE_ID = g.ID " +
+            "LEFT JOIN PUBLIC.RATING r ON u.RATING = r.ID " +
+            "WHERE uf.FILM_ID IS NULL;";
+
     private final FilmWithGenresAndLikesExtractor extractor;
     private final FilmWithGenresLikesAndDirectorsExtractor extractorDirector;
 
@@ -159,8 +196,32 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     @Override
-    public List<Film> getPopularFilms(long count) {
-        return findMany(FIND_POPULAR_FILMS, extractor, count);
+    public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
+        String groupAndOrderSql = """
+                    GROUP BY
+                    u.id,
+                    u.name,
+                    u.description,
+                    u.release_date,
+                    u.duration,
+                    u.rating,
+                    r.name,
+                    fg.genre_id,
+                    g.name
+                ORDER BY like_count DESC""";
+        String limit = " LIMIT " + count;
+        String genreParam = "fg.genre_id = " + genreId;
+        String yearParam = "u.release_date LIKE " + "'%" + year + "%'";
+        if (count != null)
+            groupAndOrderSql += limit;
+        if (genreId == null && year == null) {
+            return findMany(FIND_POPULAR_FILMS + groupAndOrderSql, extractor);
+        } else if (year == null) {
+            return findMany(FIND_POPULAR_FILMS + "WHERE " + genreParam + groupAndOrderSql, extractor);
+        } else if (genreId == null) {
+            return findMany(FIND_POPULAR_FILMS + "WHERE " + yearParam + groupAndOrderSql, extractor);
+        } else
+            return findMany(FIND_POPULAR_FILMS + "WHERE " + genreParam + " AND " + yearParam + groupAndOrderSql, extractor);
     }
 
     @Override
@@ -186,5 +247,30 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             default -> throw new EntityNotFoundException(String.format("Sored by %s not exist", sortBy));
         };
         return films;
+    }
+      
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return findMany(FIND_COMMON_FILMS_QUERY, extractor, userId, friendId);
+    }
+
+    public List<Film> getRecommendedFilms(long userId) {
+        Long matchUserId;
+        String findMatchUserIdSql = "WITH UserLikes AS (" +
+                "    SELECT FILM_ID FROM PUBLIC.FILM_LIKES WHERE USER_ID = " + userId +
+                "), MatchedUsers AS (" +
+                "    SELECT fl.USER_ID AS user_id, COUNT(fl.FILM_ID) AS matched_likes" +
+                "    FROM PUBLIC.FILM_LIKES fl" +
+                "    JOIN UserLikes ul ON fl.FILM_ID = ul.FILM_ID" +
+                "    WHERE fl.USER_ID <> " + userId +
+                "    GROUP BY fl.USER_ID" +
+                ")" +
+                "SELECT user_id FROM MatchedUsers ORDER BY matched_likes DESC LIMIT 1;";
+        try {
+            matchUserId = jdbc.queryForObject(findMatchUserIdSql, Long.class);
+        } catch (DataAccessException e) {
+            return new ArrayList<Film>();
+        }
+        return jdbc.query(FIND_RECOMMENDED_FILMS, new Object[]{matchUserId, userId}, extractor);
     }
 }

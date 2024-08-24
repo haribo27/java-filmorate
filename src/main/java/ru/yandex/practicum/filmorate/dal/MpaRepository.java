@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class MpaRepository extends BaseRepository<Mpa> {
+public class MpaRepository extends BaseRepository<Mpa> implements MpaStorage {
 
     private static final String FIND_ALL_QUERY = "SELECT * from rating";
     private static final String FIND_BY_ID_QUERY = "SELECT * from rating WHERE id = ?";
@@ -18,10 +18,12 @@ public class MpaRepository extends BaseRepository<Mpa> {
         super(jdbc, mapper);
     }
 
+    @Override
     public List<Mpa> getAllMpa() {
         return findMany(FIND_ALL_QUERY);
     }
 
+    @Override
     public Optional<Mpa> getMpaById(long id) {
         return findOne(FIND_BY_ID_QUERY, id);
     }

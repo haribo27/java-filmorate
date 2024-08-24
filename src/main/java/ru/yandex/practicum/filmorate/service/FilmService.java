@@ -10,7 +10,10 @@ import ru.yandex.practicum.filmorate.dto.filmRequest.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.filmRequest.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.model.EventTypeFeed;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.OperationFeed;
+
 
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +38,14 @@ public class FilmService {
         this.mpaService = mpaService;
         this.genreService = genreService;
         this.directorService = directorService;
+    }
+
+    public List<FilmDto> getRecommendedFilms(long userId) {
+        log.info("Getting recommended films to user {}", userId);
+        return filmRepository.getRecommendedFilms(userId)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
     }
 
     public FilmDto createFilm(NewFilmRequest request) {
@@ -95,6 +106,7 @@ public class FilmService {
         filmRepository.findById(filmId).orElseThrow(() -> new EntityNotFoundException("Фильма с таким id не существует"));
         userService.getUserOrException(userId);
         filmRepository.addFilmLike(userId, filmId);
+        userService.addEvent(userId, EventTypeFeed.LIKE, OperationFeed.ADD, filmId);
         log.info("Added like with id: {}, user id {}", filmId, userId);
 
     }
@@ -104,12 +116,19 @@ public class FilmService {
         isFilmExist(filmId);
         userService.getUserOrException(userId);
         filmRepository.deleteLike(userId, filmId);
+        userService.addEvent(userId, EventTypeFeed.LIKE, OperationFeed.REMOVE, filmId);
         log.info("Deleted like from film {}, user {}", filmId, userId);
     }
 
-    public List<Film> getPopularFilms(int count) {
+    public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
         log.info("Getting popular films");
-        return filmRepository.getPopularFilms(count);
+        return filmRepository.getPopularFilms(count, genreId, year);
+    }
+
+    public List<FilmDto> getCommonFilms(long userId, long friendId) {
+        log.info("GET /films/common?userId={}&friendId={}", userId, friendId);
+        userService.isUsersExists(userId, friendId);
+        return filmRepository.getCommonFilms(userId, friendId).stream().map(FilmMapper::mapToFilmDto).toList();
     }
 
     private void isFilmExist(long id) {
