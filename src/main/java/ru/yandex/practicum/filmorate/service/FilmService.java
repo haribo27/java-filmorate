@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FilmDirectorRepository;
 import ru.yandex.practicum.filmorate.dal.FilmGenreRepository;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
@@ -24,14 +25,15 @@ public class FilmService {
     private final UserService userService;
     private final MpaService mpaService;
     private final GenreService genreService;
+    private final DirectorService directorService;
 
-
-    public FilmService(FilmStorage filmRepository, FilmGenreRepository filmGenreRepository, UserService userService, MpaService mpaService, GenreService genreService) {
+    public FilmService(FilmStorage filmRepository, FilmGenreRepository filmGenreRepository, FilmDirectorRepository filmDirectorRepository, UserService userService, MpaService mpaService, GenreService genreService, DirectorService directorService) {
         this.filmRepository = filmRepository;
         this.filmGenreRepository = filmGenreRepository;
         this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
+        this.directorService = directorService;
     }
 
     public List<FilmDto> getRecommendedFilms(long userId) {
@@ -46,10 +48,14 @@ public class FilmService {
         log.info("Creating film: {}", request);
         mpaService.isMpaExist(request.getMpa().getId());
         genreService.isGenresExists(request.getGenres());
+        directorService.isDirectorExist(request.getDirectors());
         Film film = FilmMapper.mapToFilm(request);
         film = filmRepository.createFilm(film);
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            filmGenreRepository.saveGenre(film.getId(), film.getGenres().stream().toList());
+            genreService.saveFilmsGenres(film.getId(), film.getGenres());
+        }
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            directorService.saveFilmsDirector(film.getId(), film.getDirectors());
         }
         log.info("Created new film: {}", film);
         return FilmMapper.mapToFilmDto(film);
@@ -61,6 +67,10 @@ public class FilmService {
                 .map(film -> FilmMapper.updateFilmFields(film, request))
                 .orElseThrow(() -> new EntityNotFoundException("Film not found"));
         filmRepository.updateFilm(updatedFilm);
+        // добавить обновления директоров и жанров в таблицах
+        genreService.updateGenres(updatedFilm.getId(),updatedFilm.getGenres());
+        mpaService.updateMpa(updatedFilm.getId(),updatedFilm.getMpa());
+        //directorService.updateDirector();
         log.info("Film updated: {}", updatedFilm);
         return FilmMapper.mapToFilmDto(updatedFilm);
     }
@@ -114,7 +124,8 @@ public class FilmService {
     public List<FilmDto> getCommonFilms(long userId, long friendId) {
         log.info("GET /films/common?userId={}&friendId={}", userId, friendId);
         userService.isUsersExists(userId, friendId);
-        return filmRepository.getCommonFilms(userId, friendId).stream().map(FilmMapper::mapToFilmDto).toList();
+        return filmRepository.getCommonFilms(userId, friendId).stream()
+                .map(FilmMapper::mapToFilmDto).toList();
     }
 
     private void isFilmExist(long id) {
@@ -122,4 +133,9 @@ public class FilmService {
         filmRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Фильм в данным айди не найден"));
     }
+
+    public List<Film> getDirectorFilms(Long id, String sortBy) {
+        return filmRepository.getDirectorFilms(id, sortBy);
+    }
+
 }

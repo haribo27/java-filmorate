@@ -44,7 +44,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler
     public ErrorResponse handleDuplicateKeyException(final DuplicateKeyException e) {
-        log.debug("Exception: {}, trying to set duplicate key in db",e.getMessage());
+        log.debug("Exception: {}, trying to set duplicate key in db", e.getMessage());
         return new ErrorResponse("Попытка вставить в таблицу уже существующие строки");
     }
 }

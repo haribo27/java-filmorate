@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FilmGenreRepository;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
@@ -17,9 +18,11 @@ import java.util.Set;
 public class GenreService {
 
     private final GenreRepository genreRepository;
+    private final FilmGenreRepository filmGenreRepository;
 
-    public GenreService(GenreRepository genreRepository) {
+    public GenreService(GenreRepository genreRepository, FilmGenreRepository filmGenreRepository) {
         this.genreRepository = genreRepository;
+        this.filmGenreRepository = filmGenreRepository;
     }
 
     public List<GenreDto> getAllGenres() {
@@ -45,5 +48,12 @@ public class GenreService {
         } catch (EntityNotFoundException e) {
             throw new ValidationException("Жанра с таким айди не существует");
         }
+    }
+
+    public void saveFilmsGenres(long filmId, Set<Genre> genres) {
+        filmGenreRepository.saveFilmsGenre(filmId,genres.stream().toList());
+    }
+
+    public void updateGenres(long id, Set<Genre> genres) {
     }
 }
