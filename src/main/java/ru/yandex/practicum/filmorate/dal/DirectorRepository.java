@@ -13,9 +13,9 @@ import java.util.Optional;
 public class DirectorRepository extends BaseRepository<Director> implements DirectorStorage {
 
     private static final String FIND_ALL_QUERY_BY_FILM_ID = """
-            SELECT 
+            SELECT
             d.id AS director_id,
-            d.name AS director_name 
+            d.name AS director_name
             FROM directors d
             JOIN film_director fd ON d.id = fd.director_id
             WHERE film_id = ? ORDER BY d.id
@@ -26,12 +26,6 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
     private static final String UPDATE_QUERY = "UPDATE directors SET name = ? WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM directors WHERE id = ?";
     private static final String INSERT_QUERY = "INSERT INTO directors (name) VALUES(?)";
-    private static final String GET_BY_FILM_ID = """
-            SELECT * 
-            FROM directors d
-            INNER JOIN film_director fd on d.id = fd.director_id
-            WHERE film_id = ?
-            """;
 
     public DirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper) {
         super(jdbc, mapper);
