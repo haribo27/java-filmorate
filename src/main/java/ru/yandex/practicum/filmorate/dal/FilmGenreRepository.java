@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Repository
-public class FilmGenreRepository extends BaseRepository<Genre> {
+public class FilmGenreRepository extends BaseRepository<Genre> implements FilmGenreStorage {
 
     private static final String INSERT_QUERY = "INSERT INTO FILM_GENRE (film_id,genre_id) VALUES (?,?)";
 
@@ -20,8 +20,9 @@ public class FilmGenreRepository extends BaseRepository<Genre> {
     }
 
 
-    public int[] saveGenre(long filmId, List<Genre> genres) {
-        return this.jdbc.batchUpdate(
+    @Override
+    public void saveGenre(long filmId, List<Genre> genres) {
+        this.jdbc.batchUpdate(
                 INSERT_QUERY,
                 new BatchPreparedStatementSetter() {
                     @Override

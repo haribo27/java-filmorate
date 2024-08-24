@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class ReviewRepository extends BaseRepository<Review> {
+public class ReviewRepository extends BaseRepository<Review> implements ReviewStorage {
 
     private static final String INSERT_REVIEW = "INSERT INTO REVIEWS (content, is_positive," +
             " user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
@@ -33,6 +33,7 @@ public class ReviewRepository extends BaseRepository<Review> {
         super(jdbc, mapper);
     }
 
+    @Override
     public Review saveReview(Review review) {
         long id = insert(
                 INSERT_REVIEW,
@@ -46,6 +47,7 @@ public class ReviewRepository extends BaseRepository<Review> {
         return review;
     }
 
+    @Override
     public void updateReview(Review review) {
         update(
                 UPDATE_REVIEW,
@@ -58,22 +60,27 @@ public class ReviewRepository extends BaseRepository<Review> {
         );
     }
 
+    @Override
     public Optional<Review> findById(long id) {
         return findOne(FIND_REVIEW_BY_ID, id);
     }
 
+    @Override
     public boolean deleteReview(long id) {
         return delete(DELETE_REVIEW, id);
     }
 
+    @Override
     public List<Review> getAllReviews(long count) {
         return findMany(FIND_ALL, count);
     }
 
+    @Override
     public List<Review> getFilmsReviews(Long filmId, long count) {
         return findMany(FIND_ALL_FILMS_REVIEWS, filmId, count);
     }
 
+    @Override
     public void addReviewLike(long id, long userId) {
         jdbc.update(INSERT_REVIEWS_LIKE,
                 userId,
@@ -82,6 +89,7 @@ public class ReviewRepository extends BaseRepository<Review> {
         update(UPDATE_REVIEWS_INCREMENT_USEFUL, id);
     }
 
+    @Override
     public void addReviewDislike(long id, long userId) {
         jdbc.update(
                 UPDATE_REVIEWS_LIKES_ON_DISLIKE,
@@ -90,12 +98,14 @@ public class ReviewRepository extends BaseRepository<Review> {
         update(ADD_DISLIKE_TO_REVIEW, id);
     }
 
+    @Override
     public int deleteReviewLike(long id, long userId) {
         int updatedRows = jdbc.update(DELETE_REVIEW_LIKE, userId, id, true);
         if (updatedRows > 0) update(UPDATE_REVIEWS_DECREMENT_USEFUL, id);
         return updatedRows;
     }
 
+    @Override
     public int deleteReviewDislike(long id, long userId) {
         int updatedRows = jdbc.update(DELETE_REVIEW_LIKE, userId, id, false);
         if (updatedRows > 0) update(UPDATE_REVIEWS_INCREMENT_USEFUL, id);

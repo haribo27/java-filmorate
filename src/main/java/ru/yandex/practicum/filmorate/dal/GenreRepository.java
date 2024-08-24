@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class GenreRepository extends BaseRepository<Genre> {
+public class GenreRepository extends BaseRepository<Genre> implements GenreStorage {
 
     private static final String FIND_ALL_QUERY = "SELECT * FROM genre";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM genre WHERE id = ?";
@@ -18,10 +18,12 @@ public class GenreRepository extends BaseRepository<Genre> {
         super(jdbc, mapper);
     }
 
+    @Override
     public List<Genre> getGenres() {
         return findMany(FIND_ALL_QUERY);
     }
 
+    @Override
     public Optional<Genre> getGenreById(long id) {
         return findOne(FIND_BY_ID_QUERY, id);
     }
