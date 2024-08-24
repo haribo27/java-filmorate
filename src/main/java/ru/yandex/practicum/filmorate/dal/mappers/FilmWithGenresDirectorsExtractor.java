@@ -9,10 +9,15 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+
 
 @Component
-public class FilmWithGenresLikesAndDirectorsExtractor implements ResultSetExtractor<List<Film>> {
+public class FilmWithGenresDirectorsExtractor implements ResultSetExtractor<List<Film>> {
 
     @Override
     public List<Film> extractData(ResultSet rs) throws SQLException {

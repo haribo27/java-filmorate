@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.model.EventTypeFeed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.OperationFeed;
 
-import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -23,7 +22,6 @@ public class FilmService {
 
     private final FilmStorage filmRepository;
     private final FilmGenreRepository filmGenreRepository;
-    private final FilmDirectorRepository filmDirectorRepository;
     private final UserService userService;
     private final MpaService mpaService;
     private final GenreService genreService;
@@ -32,7 +30,6 @@ public class FilmService {
     public FilmService(FilmStorage filmRepository, FilmGenreRepository filmGenreRepository, FilmDirectorRepository filmDirectorRepository, UserService userService, MpaService mpaService, GenreService genreService, DirectorService directorService) {
         this.filmRepository = filmRepository;
         this.filmGenreRepository = filmGenreRepository;
-        this.filmDirectorRepository = filmDirectorRepository;
         this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
@@ -55,14 +52,10 @@ public class FilmService {
         Film film = FilmMapper.mapToFilm(request);
         film = filmRepository.createFilm(film);
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            filmGenreRepository.saveGenre(film.getId(), film.getGenres().stream().toList());
+            filmGenreRepository.saveFilmsGenre(film.getId(), film.getGenres().stream().toList());
         }
-        if (film.getDirectors() == null) {
-            film.setDirectors(new HashSet<>());
-        }
-        if (film.getDirectors() != null) {
-            directorService.addDirectorToFilm(film.getId(), film.getDirectors());
-            film.setDirectors(new HashSet<>(directorService.getAllDirectorsByFilmId(film.getId())));
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            directorService.saveFilmsDirector(film.getId(), film.getDirectors());
         }
         log.info("Created new film: {}", film);
         return FilmMapper.mapToFilmDto(film);
@@ -74,6 +67,7 @@ public class FilmService {
                 .map(film -> FilmMapper.updateFilmFields(film, request))
                 .orElseThrow(() -> new EntityNotFoundException("Film not found"));
         filmRepository.updateFilm(updatedFilm);
+        // добавить обновления директоров и жанров в таблицах
         log.info("Film updated: {}", updatedFilm);
         return FilmMapper.mapToFilmDto(updatedFilm);
     }
@@ -127,7 +121,8 @@ public class FilmService {
     public List<FilmDto> getCommonFilms(long userId, long friendId) {
         log.info("GET /films/common?userId={}&friendId={}", userId, friendId);
         userService.isUsersExists(userId, friendId);
-        return filmRepository.getCommonFilms(userId, friendId).stream().map(FilmMapper::mapToFilmDto).toList();
+        return filmRepository.getCommonFilms(userId, friendId).stream()
+                .map(FilmMapper::mapToFilmDto).toList();
     }
 
     private void isFilmExist(long id) {

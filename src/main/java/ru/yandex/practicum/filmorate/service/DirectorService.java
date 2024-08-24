@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.DirectorStorage;
+import ru.yandex.practicum.filmorate.dal.FilmDirectorRepository;
 import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.directorRequest.NewDirectorRequest;
 import ru.yandex.practicum.filmorate.dto.directorRequest.UpdateDirectorRequest;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class DirectorService {
 
     private final DirectorStorage directorRepository;
+    private final FilmDirectorRepository filmDirectorRepository;
 
     public DirectorDto createDirector(NewDirectorRequest request) {
         log.info("Creating director: {}", request);
@@ -83,21 +85,8 @@ public class DirectorService {
             throw new ValidationException("Директора с таким айди не существует");
         }
     }
-
-    // Получаем список id всех режиссеров
-    public Collection<Long> getAllDirectorsIds() {
-        return directorRepository.getAllDirector().stream().map(Director::getId).collect(Collectors.toList());
-    }
-
-    // Получаем список режиссеров по id фильма
-    public Collection<Director> getAllDirectorsByFilmId(Long id) {
-        return directorRepository.findAllByFilmId(id).stream().toList();
-    }
-
     // Добавляем режиссера к фильму в сводную таблицу
-    public void addDirectorToFilm(long id, Set<Director> directors) {
-        for (Director director : directors) {
-            directorRepository.insertIntoFilmDirector(id, director.getId());
-        }
+    public void saveFilmsDirector(long id, Set<Director> directors) {
+        filmDirectorRepository.saveDirector(id, directors.stream().toList());
     }
 }

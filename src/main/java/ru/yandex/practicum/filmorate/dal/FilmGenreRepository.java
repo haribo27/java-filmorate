@@ -21,7 +21,7 @@ public class FilmGenreRepository extends BaseRepository<Genre> implements FilmGe
 
 
     @Override
-    public void saveGenre(long filmId, List<Genre> genres) {
+    public void saveFilmsGenre(long filmId, List<Genre> genres) {
         this.jdbc.batchUpdate(
                 INSERT_QUERY,
                 new BatchPreparedStatementSetter() {
