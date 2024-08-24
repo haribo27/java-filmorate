@@ -118,6 +118,21 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "LEFT JOIN PUBLIC.RATING r ON u.RATING = r.ID " +
             "WHERE uf.FILM_ID IS NULL;";
 
+    private static String groupAndOrderSql = """
+                    GROUP BY
+                    u.id,
+                    u.name,
+                    u.description,
+                    u.release_date,
+                    u.duration,
+                    u.rating,
+                    r.name,
+                    fg.genre_id,
+                    g.name,
+                    fd.director_id,
+                    d.name
+                ORDER BY like_count DESC""";
+
     private static final String FIND_BY_ID_QUERY = FIND_ALL_QUERY +
             "WHERE u.id = ?";
     private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, rating)" +
@@ -176,20 +191,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     @Override
     public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
-        String groupAndOrderSql = """
-                    GROUP BY
-                    u.id,
-                    u.name,
-                    u.description,
-                    u.release_date,
-                    u.duration,
-                    u.rating,
-                    r.name,
-                    fg.genre_id,
-                    g.name,
-                    fd.director_id,
-                    d.name
-                ORDER BY like_count DESC""";
         String limit = " LIMIT " + count;
         String genreParam = "fg.genre_id = " + genreId;
         String yearParam = "u.release_date LIKE " + "'%" + year + "%'";

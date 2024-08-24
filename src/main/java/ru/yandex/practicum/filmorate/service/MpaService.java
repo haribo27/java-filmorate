@@ -46,4 +46,7 @@ public class MpaService {
         mpaRepository.getMpaById(id)
                 .orElseThrow(() -> new ValidationException("Рейтинга с таким айди не существует"));
     }
+
+    public void updateMpa(long id, Mpa mpa) {
+    }
 }

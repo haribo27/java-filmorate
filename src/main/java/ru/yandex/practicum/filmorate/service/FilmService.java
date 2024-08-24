@@ -52,7 +52,7 @@ public class FilmService {
         Film film = FilmMapper.mapToFilm(request);
         film = filmRepository.createFilm(film);
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            filmGenreRepository.saveFilmsGenre(film.getId(), film.getGenres().stream().toList());
+            genreService.saveFilmsGenres(film.getId(), film.getGenres());
         }
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             directorService.saveFilmsDirector(film.getId(), film.getDirectors());
@@ -68,6 +68,9 @@ public class FilmService {
                 .orElseThrow(() -> new EntityNotFoundException("Film not found"));
         filmRepository.updateFilm(updatedFilm);
         // добавить обновления директоров и жанров в таблицах
+        genreService.updateGenres(updatedFilm.getId(),updatedFilm.getGenres());
+        mpaService.updateMpa(updatedFilm.getId(),updatedFilm.getMpa());
+        //directorService.updateDirector();
         log.info("Film updated: {}", updatedFilm);
         return FilmMapper.mapToFilmDto(updatedFilm);
     }
