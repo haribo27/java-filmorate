@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dal;
 
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
@@ -29,4 +30,5 @@ public interface FilmStorage {
 
     List<Film> getRecommendedFilms(long userId);
 
+    List<Film> searchFilmsByParams(String query, List<String> by);
 }

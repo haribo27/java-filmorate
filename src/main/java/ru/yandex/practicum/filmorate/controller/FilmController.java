@@ -49,6 +49,12 @@ public class FilmController {
         return filmService.getCommonFilms(userId, friendId);
     }
 
+    @GetMapping("/search")
+    public List<FilmDto> searchFilms(@RequestParam(required = false) String query,
+                                     @RequestParam(required = false) List<String> by) {
+        return filmService.search(query.toLowerCase(),by);
+    }
+
     @PostMapping
     public FilmDto createFilm(@Valid @RequestBody NewFilmRequest request) {
         return filmService.createFilm(request);
@@ -75,7 +81,7 @@ public class FilmController {
     }
 
     @GetMapping("/director/{directorId}")
-    public List<Film> getDirectorFilms(
+    public List<FilmDto> getDirectorFilms(
             @PathVariable("directorId") final Long id,
             @RequestParam final String sortBy) {
         return filmService.getDirectorFilms(id, sortBy);
