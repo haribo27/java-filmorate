@@ -75,6 +75,7 @@ public class ReviewRepository extends BaseRepository<Review> {
     }
 
     public void addReviewLike(long id, long userId) {
+        deleteReviewDislike(id, userId);
         jdbc.update(INSERT_REVIEWS_LIKE,
                 userId,
                 id,
@@ -83,6 +84,7 @@ public class ReviewRepository extends BaseRepository<Review> {
     }
 
     public void addReviewDislike(long id, long userId) {
+        deleteReviewLike(id, userId);
         jdbc.update(
                 UPDATE_REVIEWS_LIKES_ON_DISLIKE,
                 userId,
