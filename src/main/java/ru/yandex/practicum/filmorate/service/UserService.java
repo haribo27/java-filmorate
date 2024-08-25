@@ -76,8 +76,6 @@ public class UserService {
     public void addFriend(long fromUserId, long toFriendId) {
         log.info("Add request from user {} to user {}", fromUserId, toFriendId);
         isUsersExists(fromUserId, toFriendId);
-        userRepository.findUserById(fromUserId)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь с таким id не найден"));
         userRepository.addFriend(fromUserId, toFriendId);
         addEvent(fromUserId, EventTypeFeed.FRIEND, OperationFeed.ADD, toFriendId);
         log.info("Added friend {} to user {}", fromUserId, toFriendId);
