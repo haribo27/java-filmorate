@@ -48,5 +48,6 @@ public class MpaService {
     }
 
     public void updateMpa(long id, Mpa mpa) {
+
     }
 }

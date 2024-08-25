@@ -39,11 +39,6 @@ public class FilmMapper {
         filmDto.setName(film.getName());
         filmDto.setGenres(film.getGenres());
         filmDto.setDirectors(film.getDirectors());
-//        if (film.getDirectors() == null) {
-//            filmDto.setDirectors(Set.of());
-//        } else {
-//            filmDto.setDirectors(film.getDirectors());
-//        }
         return filmDto;
     }
 

@@ -10,11 +10,13 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public class FilmDirectorRepository extends BaseRepository<Director> {
 
     private static final String INSERT_QUERY = "INSERT INTO FILM_DIRECTOR (film_id, director_id) VALUES (?,?)";
+    private static final String DELETE_QUERY = "DELETE FROM FILM_DIRECTOR WHERE film_id = ?";
 
     public FilmDirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper) {
         super(jdbc, mapper);
@@ -37,5 +39,9 @@ public class FilmDirectorRepository extends BaseRepository<Director> {
                         return directors.size();
                     }
                 });
+    }
+
+    public void deleteFilmsDirector(long filmId) {
+        delete(DELETE_QUERY,filmId);
     }
 }

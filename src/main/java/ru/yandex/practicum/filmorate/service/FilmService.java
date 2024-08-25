@@ -52,13 +52,15 @@ public class FilmService {
         Film film = FilmMapper.mapToFilm(request);
         film = filmRepository.createFilm(film);
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            genreService.saveFilmsGenres(film.getId(), film.getGenres());
+            genreService.saveFilmsGenres(film.getId(), film.getGenres().stream().toList().reversed());
         }
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             directorService.saveFilmsDirector(film.getId(), film.getDirectors());
         }
         log.info("Created new film: {}", film);
-        return FilmMapper.mapToFilmDto(film);
+        return filmRepository.findById(film.getId())
+                .map(FilmMapper::mapToFilmDto)
+                .orElseThrow(()-> new EntityNotFoundException("Film not found"));
     }
 
     public FilmDto updateFilm(UpdateFilmRequest request) {
@@ -67,12 +69,13 @@ public class FilmService {
                 .map(film -> FilmMapper.updateFilmFields(film, request))
                 .orElseThrow(() -> new EntityNotFoundException("Film not found"));
         filmRepository.updateFilm(updatedFilm);
-        // добавить обновления директоров и жанров в таблицах
-        genreService.updateGenres(updatedFilm.getId(),updatedFilm.getGenres());
-        mpaService.updateMpa(updatedFilm.getId(),updatedFilm.getMpa());
-        //directorService.updateDirector();
+        genreService.updateGenres(updatedFilm.getId(),updatedFilm.getGenres().stream().toList());
+
+        directorService.updateDirector(updatedFilm.getId(),updatedFilm.getDirectors());
         log.info("Film updated: {}", updatedFilm);
-        return FilmMapper.mapToFilmDto(updatedFilm);
+        return filmRepository.findById(updatedFilm.getId())
+                .map(FilmMapper::mapToFilmDto)
+                .orElseThrow(() -> new EntityNotFoundException("Film not Found"));
     }
 
     public void deleteFilm(long id) {
@@ -135,6 +138,7 @@ public class FilmService {
     }
 
     public List<Film> getDirectorFilms(Long id, String sortBy) {
+        directorService.isDirectorExist(id);
         return filmRepository.getDirectorFilms(id, sortBy);
     }
 

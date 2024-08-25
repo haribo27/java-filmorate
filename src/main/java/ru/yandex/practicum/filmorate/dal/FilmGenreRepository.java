@@ -14,6 +14,7 @@ import java.util.List;
 public class FilmGenreRepository extends BaseRepository<Genre> implements FilmGenreStorage {
 
     private static final String INSERT_QUERY = "INSERT INTO FILM_GENRE (film_id,genre_id) VALUES (?,?)";
+    private static final String DELETE_QUERY = "DELETE FROM FILM_GENRE WHERE film_id = ?";
 
     public FilmGenreRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper);
@@ -36,5 +37,9 @@ public class FilmGenreRepository extends BaseRepository<Genre> implements FilmGe
                         return genres.size();
                     }
                 });
+    }
+
+    public void deleteFilmsGenre(long filmId) {
+        delete(DELETE_QUERY,filmId);
     }
 }

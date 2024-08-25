@@ -31,7 +31,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private static final String FIND_ALL_QUERY = BASE_SELECT_QUERY +
             """
                         fi.user_id AS liked_by_user_id,
-                        fd.director_id AS film_director_id
+                        fd.director_id AS film_director_id,
+                        d.name AS film_director_name
                     FROM films AS u
                     LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
                     LEFT JOIN genre AS g ON fg.genre_id = g.id
@@ -118,27 +119,12 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "LEFT JOIN PUBLIC.RATING r ON u.RATING = r.ID " +
             "WHERE uf.FILM_ID IS NULL;";
 
-    private static String groupAndOrderSql = """
-                    GROUP BY
-                    u.id,
-                    u.name,
-                    u.description,
-                    u.release_date,
-                    u.duration,
-                    u.rating,
-                    r.name,
-                    fg.genre_id,
-                    g.name,
-                    fd.director_id,
-                    d.name
-                ORDER BY like_count DESC""";
-
     private static final String FIND_BY_ID_QUERY = FIND_ALL_QUERY +
             "WHERE u.id = ?";
     private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, rating)" +
             "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?," +
-            " release_date = ?, duration = ? WHERE id = ?";
+            " release_date = ?, duration = ?, rating = ? WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
     private static final String INSERT_FILM_LIKE = "INSERT INTO FILM_LIKES (user_id, film_id) VALUES (?, ?)";
     private static final String DELETE_LIKE_FROM_FILM = "DELETE FROM FILM_LIKES WHERE user_id = ? AND film_id = ?";
@@ -172,6 +158,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
+                film.getMpa().getId(),
                 film.getId()
         );
         delete("DELETE FROM film_director WHERE film_id = ?", film.getId());
@@ -191,19 +178,38 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     @Override
     public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
-        String limit = " LIMIT " + count;
-        String genreParam = "fg.genre_id = " + genreId;
-        String yearParam = "u.release_date LIKE " + "'%" + year + "%'";
-        if (count != null)
-            groupAndOrderSql += limit;
-        if (genreId == null && year == null) {
-            return findMany(FIND_POPULAR_FILMS + groupAndOrderSql, extractor);
-        } else if (year == null) {
-            return findMany(FIND_POPULAR_FILMS + "WHERE " + genreParam + groupAndOrderSql, extractor);
-        } else if (genreId == null) {
-            return findMany(FIND_POPULAR_FILMS + "WHERE " + yearParam + groupAndOrderSql, extractor);
-        } else
-            return findMany(FIND_POPULAR_FILMS + "WHERE " + genreParam + " AND " + yearParam + groupAndOrderSql, extractor);
+        StringBuilder query = new StringBuilder(FIND_POPULAR_FILMS);
+        if (genreId != null || year != null) {
+            query.append(" WHERE ");
+            if (genreId != null) {
+                query.append("fg.genre_id = ").append(genreId);
+            }
+            if (year != null) {
+                if (genreId != null) {
+                    query.append(" AND ");
+                }
+                query.append("u.release_date LIKE ").append("'%").append(year).append("%'");
+            }
+        }
+        String groupAndOrderSql = """
+                    GROUP BY
+                    u.id,
+                    u.name,
+                    u.description,
+                    u.release_date,
+                    u.duration,
+                    u.rating,
+                    r.name,
+                    fg.genre_id,
+                    g.name,
+                    fd.director_id,
+                    d.name
+                ORDER BY like_count DESC""";
+        query.append(groupAndOrderSql);
+        if (count != null) {
+            query.append(" LIMIT ").append(count);
+        }
+        return findMany(query.toString(), extractor);
     }
 
     @Override

@@ -50,10 +50,15 @@ public class GenreService {
         }
     }
 
-    public void saveFilmsGenres(long filmId, Set<Genre> genres) {
-        filmGenreRepository.saveFilmsGenre(filmId,genres.stream().toList());
+    public void saveFilmsGenres(long filmId, List<Genre> genres) {
+        if (genres != null && !genres.isEmpty()) {
+            filmGenreRepository.saveFilmsGenre(filmId, genres);
+        }
     }
 
-    public void updateGenres(long id, Set<Genre> genres) {
+    public void updateGenres(long filmId, List<Genre> genre) {
+        filmGenreRepository.deleteFilmsGenre(filmId);
+        saveFilmsGenres(filmId,genre);
     }
+
 }

@@ -68,7 +68,7 @@ public class DirectorService {
         return DirectorMapper.mapToDirectorDto(director);
     }
 
-    private void isDirectorExist(long id) {
+    public void isDirectorExist(long id) {
         log.debug("Check director exist with id {}", id);
         directorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Директор с таким id=%d не существует", id)));
@@ -87,5 +87,10 @@ public class DirectorService {
     // Добавляем режиссера к фильму в сводную таблицу
     public void saveFilmsDirector(long id, Set<Director> directors) {
         filmDirectorRepository.saveDirector(id, directors.stream().toList());
+    }
+
+    public void updateDirector(long id, Set<Director> directors) {
+        filmDirectorRepository.deleteFilmsDirector(id);
+        saveFilmsDirector(id,directors);
     }
 }
