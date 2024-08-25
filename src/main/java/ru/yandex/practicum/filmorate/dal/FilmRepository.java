@@ -206,10 +206,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                     d.name
                 ORDER BY like_count DESC""";
         query.append(groupAndOrderSql);
-        if (count != null) {
-            query.append(" LIMIT ").append(count);
+        if (count == null ) {
+            return findMany(query.toString(), extractor);
         }
-        return findMany(query.toString(), extractor);
+        return findMany(query.toString(), extractor).stream().limit(count).toList();
     }
 
     @Override
