@@ -34,15 +34,20 @@ public class ReviewController {
         reviewService.deleteReview(id);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ReviewDto findReviewById(@PathVariable String id) {
         return reviewService.findById(id);
     }
 
     @GetMapping
-    public List<ReviewDto> getFilmsReviewOrAll(@RequestParam(value = "filmId", required = false) Long filmId,
-                                               @RequestParam(value = "count", required = false, defaultValue = "10") long count) {
-        return reviewService.getFilmsReviewsOrAll(filmId, count);
+    public List<ReviewDto> getAllFilmsReviews(@RequestParam(value = "count", required = false, defaultValue = "10") long count) {
+        return reviewService.getAllFilmsReviews(count);
+    }
+
+    @GetMapping(params = {"filmId"})
+    public List<ReviewDto> getFilmReviewsById(@RequestParam(value = "filmId") Long filmId,
+                                              @RequestParam(value = "count", required = false, defaultValue = "10") long count) {
+        return reviewService.getFilmReviewsById(filmId, count);
     }
 
     @PutMapping("/{id}/like/{userId}")

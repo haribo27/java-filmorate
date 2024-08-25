@@ -14,11 +14,12 @@ public class ReviewRowMapper implements RowMapper<Review> {
     public Review mapRow(ResultSet rs, int rowNum) throws SQLException {
         Review review = new Review();
         review.setId(rs.getLong("id"));
-        review.setUseful(rs.getInt("useful"));
         review.setContent(rs.getString("content"));
+        review.setPositive(rs.getBoolean("is_positive"));
         review.setFilmId(rs.getLong("film_id"));
         review.setUserId(rs.getLong("user_id"));
-        review.setPositive(rs.getBoolean("is_positive"));
+        review.setUseful(rs.getInt("useful"));
+
         return review;
     }
 }

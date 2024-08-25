@@ -4,42 +4,43 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Director;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class FilmGenreRepository extends BaseRepository<Genre> implements FilmGenreStorage {
+public class FilmDirectorRepository extends BaseRepository<Director> {
 
-    private static final String INSERT_QUERY = "INSERT INTO FILM_GENRE (film_id,genre_id) VALUES (?,?)";
-    private static final String DELETE_QUERY = "DELETE FROM FILM_GENRE WHERE film_id = ?";
+    private static final String INSERT_QUERY = "INSERT INTO FILM_DIRECTOR (film_id, director_id) VALUES (?,?)";
+    private static final String DELETE_QUERY = "DELETE FROM FILM_DIRECTOR WHERE film_id = ?";
 
-    public FilmGenreRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
+    public FilmDirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper) {
         super(jdbc, mapper);
     }
 
 
-    @Override
-    public void saveFilmsGenre(long filmId, List<Genre> genres) {
+    public void saveDirector(Long filmId, List<Director> directors) {
+        List<Director> filmDirector = new ArrayList<>(directors);
         this.jdbc.batchUpdate(
                 INSERT_QUERY,
                 new BatchPreparedStatementSetter() {
                     @Override
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
                         ps.setString(1, String.valueOf(filmId));
-                        ps.setLong(2, genres.get(i).getId());
+                        ps.setLong(2, filmDirector.get(i).getId());
                     }
 
                     @Override
                     public int getBatchSize() {
-                        return genres.size();
+                        return directors.size();
                     }
                 });
     }
 
-    public void deleteFilmsGenre(long filmId) {
-        delete(DELETE_QUERY,filmId);
+    public void deleteFilmsDirector(long filmId) {
+        delete(DELETE_QUERY, filmId);
     }
 }
