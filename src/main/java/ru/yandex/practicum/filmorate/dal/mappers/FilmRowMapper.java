@@ -9,9 +9,9 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Component
 public class FilmRowMapper implements RowMapper<Film> {
@@ -29,7 +29,7 @@ public class FilmRowMapper implements RowMapper<Film> {
         mpa.setName(rs.getString("film_rating_name"));
         film.setMpa(mpa);
 
-        Set<Genre> genres = new HashSet<>();
+        Set<Genre> genres = new TreeSet<>();
         Set<Director> directors = new HashSet<>();
 
         do {

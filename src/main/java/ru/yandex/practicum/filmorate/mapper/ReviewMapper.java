@@ -29,10 +29,7 @@ public class ReviewMapper {
     }
 
     public static Review mapToUpdatedReview(Review review, UpdateReviewRequest request) {
-        review.setUseful(request.getUseful());
         review.setContent(request.getContent());
-        review.setFilmId(request.getFilmId());
-        review.setUserId(request.getUserId());
         review.setPositive(request.getIsPositive());
         return review;
     }

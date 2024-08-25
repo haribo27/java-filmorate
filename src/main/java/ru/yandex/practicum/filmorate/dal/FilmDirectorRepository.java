@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public class FilmDirectorRepository extends BaseRepository<Director> {
@@ -42,6 +41,6 @@ public class FilmDirectorRepository extends BaseRepository<Director> {
     }
 
     public void deleteFilmsDirector(long filmId) {
-        delete(DELETE_QUERY,filmId);
+        delete(DELETE_QUERY, filmId);
     }
 }

@@ -48,10 +48,9 @@ public class ReviewService {
         isUserExist(request.getUserId());
         Review review = ReviewMapper.mapToReview(request);
         review = reviewRepository.saveReview(review);
-        log.info("Saved review {}", review);
-        currentId = review.getId();
+        userService.addEvent(review.getUserId(), EventTypeFeed.REVIEW, OperationFeed.ADD, review.getId());
 
-        userService.addEvent(request.getUserId(), EventTypeFeed.REVIEW, OperationFeed.ADD, currentId);
+        log.info("Saved review {}", review);
 
         return ReviewMapper.mapToReviewDto(review);
     }
@@ -62,9 +61,9 @@ public class ReviewService {
                 .map(review -> ReviewMapper.mapToUpdatedReview(review, request))
                 .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
         reviewRepository.updateReview(updatedReview);
-        log.info("Updated review {}", updatedReview);
+        userService.addEvent(updatedReview.getUserId(), EventTypeFeed.REVIEW, OperationFeed.UPDATE, updatedReview.getId());
 
-        userService.addEvent(request.getUserId(), EventTypeFeed.REVIEW, OperationFeed.UPDATE, request.getReviewId());
+        log.info("Updated review {}", updatedReview);
 
         return ReviewMapper.mapToReviewDto(updatedReview);
     }
@@ -74,8 +73,8 @@ public class ReviewService {
         Review review = reviewRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
 
 
+        userService.addEvent(review.getUserId(), EventTypeFeed.REVIEW, OperationFeed.REMOVE, id);
         if (reviewRepository.deleteReview(id)) {
-            userService.addEvent(review.getUserId(), EventTypeFeed.REVIEW, OperationFeed.REMOVE, review.getId());
             log.info("Review deleted");
         } else {
             log.info("Review not deleted");
@@ -95,21 +94,20 @@ public class ReviewService {
                 .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
     }
 
-    public List<ReviewDto> getFilmsReviewsOrAll(Long filmId, Long count) {
-        log.info("Getting film's reviews or getting all reviews");
-        if (filmId == null) {
-            log.info("getting all reviews");
-            return reviewRepository.getAllReviews(count)
-                    .stream()
-                    .map(ReviewMapper::mapToReviewDto)
-                    .toList();
-        } else {
-            log.info("Getting reviews for film with id {}", filmId);
-            return reviewRepository.getFilmsReviews(filmId, count)
-                    .stream()
-                    .map(ReviewMapper::mapToReviewDto)
-                    .toList();
-        }
+    public List<ReviewDto> getAllFilmsReviews(Long count) {
+        log.info("GET /reviews");
+        return reviewRepository.getAllReviews(count)
+                .stream()
+                .map(ReviewMapper::mapToReviewDto)
+                .toList();
+    }
+
+    public List<ReviewDto> getFilmReviewsById(Long filmId, Long count) {
+        log.info("GET /reviews?filmId={}&count={}", filmId, count);
+        return reviewRepository.getFilmsReviews(filmId, count)
+                .stream()
+                .map(ReviewMapper::mapToReviewDto)
+                .toList();
     }
 
     public void addReviewLike(long id, long userId) {

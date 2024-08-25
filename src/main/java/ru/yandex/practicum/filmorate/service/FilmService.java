@@ -60,7 +60,7 @@ public class FilmService {
         log.info("Created new film: {}", film);
         return filmRepository.findById(film.getId())
                 .map(FilmMapper::mapToFilmDto)
-                .orElseThrow(()-> new EntityNotFoundException("Film not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Film not found"));
     }
 
     public FilmDto updateFilm(UpdateFilmRequest request) {
@@ -69,9 +69,9 @@ public class FilmService {
                 .map(film -> FilmMapper.updateFilmFields(film, request))
                 .orElseThrow(() -> new EntityNotFoundException("Film not found"));
         filmRepository.updateFilm(updatedFilm);
-        genreService.updateGenres(updatedFilm.getId(),updatedFilm.getGenres().stream().toList());
+        genreService.updateGenres(updatedFilm.getId(), updatedFilm.getGenres().stream().toList());
 
-        directorService.updateDirector(updatedFilm.getId(),updatedFilm.getDirectors());
+        directorService.updateDirector(updatedFilm.getId(), updatedFilm.getDirectors());
         log.info("Film updated: {}", updatedFilm);
         return filmRepository.findById(updatedFilm.getId())
                 .map(FilmMapper::mapToFilmDto)
@@ -102,10 +102,10 @@ public class FilmService {
 
     public void addFilmLike(long filmId, long userId) {
         log.info("Adding like with film id: {}, user id {}", filmId, userId);
-        filmRepository.findById(filmId).orElseThrow(() -> new EntityNotFoundException("Фильма с таким id не существует"));
+        userService.addEvent(userId, EventTypeFeed.LIKE, OperationFeed.ADD, filmId);
+        isFilmExist(filmId);
         userService.getUserOrException(userId);
         filmRepository.addFilmLike(userId, filmId);
-        userService.addEvent(userId, EventTypeFeed.LIKE, OperationFeed.ADD, filmId);
         log.info("Added like with id: {}, user id {}", filmId, userId);
 
     }
