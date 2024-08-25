@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.Map;
 
 
 @Component
-public class FilmWithGenresDirectorsExtractor implements ResultSetExtractor<List<Film>> {
+public class FilmWithGenresDirectorsExtractor implements ResultSetExtractor<List<Film>>, Serializable {
 
     @Override
     public List<Film> extractData(ResultSet rs) throws SQLException {

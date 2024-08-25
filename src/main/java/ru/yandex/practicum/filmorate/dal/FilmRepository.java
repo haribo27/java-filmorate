@@ -1,8 +1,11 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmWithGenresDirectorsExtractor;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
@@ -97,27 +100,39 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                     ORDER BY like_count DESC;
                     """;
 
-    private static final String FIND_RECOMMENDED_FILMS = "WITH SimilarUserFilms AS (" +
-            "    SELECT fl.FILM_ID FROM PUBLIC.FILM_LIKES fl WHERE fl.USER_ID = ?" +
-            "), UserFilms AS (" +
-            "    SELECT FILM_ID FROM PUBLIC.FILM_LIKES WHERE USER_ID = ?" +
-            ")" +
-            "SELECT u.ID AS film_id, " +
-            "       u.NAME AS film_name, " +
-            "       u.DESCRIPTION AS film_description, " +
-            "       u.RELEASE_DATE AS film_release_date, " +
-            "       u.DURATION AS film_duration, " +
-            "       u.RATING AS film_rating_id, " +
-            "       r.NAME AS film_rating_name, " +
-            "       fg.GENRE_ID AS film_genre_id, " +
-            "       g.NAME AS film_genre_name " +
-            "FROM PUBLIC.FILMS u " +
-            "JOIN SimilarUserFilms suf ON u.ID = suf.FILM_ID " +
-            "LEFT JOIN UserFilms uf ON u.ID = uf.FILM_ID " +
-            "LEFT JOIN PUBLIC.FILM_GENRE fg ON u.ID = fg.FILM_ID " +
-            "LEFT JOIN PUBLIC.GENRE g ON fg.GENRE_ID = g.ID " +
-            "LEFT JOIN PUBLIC.RATING r ON u.RATING = r.ID " +
-            "WHERE uf.FILM_ID IS NULL;";
+    private static final String FIND_RECOMMENDED_FILMS = """
+            WITH User2Films AS (
+                SELECT FILM_ID
+                FROM FILM_LIKES
+                WHERE USER_ID = ?
+            ),
+            User1Films AS (
+                SELECT FILM_ID
+                FROM FILM_LIKES
+                WHERE USER_ID = ?
+            )
+            SELECT u.ID AS film_id,
+                   u.NAME AS film_name,
+                   u.DESCRIPTION AS film_description,
+                   u.RELEASE_DATE AS film_release_date,
+                   u.DURATION AS film_duration,
+                   u.RATING AS film_rating_id,
+                   r.NAME AS film_rating_name,
+                   fg.GENRE_ID AS film_genre_id,
+                   g.NAME AS film_genre_name,
+                   fd.director_id AS film_director_id,
+                   d.name AS film_director_name
+            FROM FILMS u
+            JOIN User2Films u2f ON u.ID = u2f.FILM_ID
+            LEFT JOIN User1Films u1f ON u.ID = u1f.FILM_ID
+            LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
+            LEFT JOIN genre AS g ON fg.genre_id = g.id
+            LEFT JOIN FILM_LIKES AS fi ON u.id = fi.film_id
+            LEFT JOIN rating AS r ON u.rating = r.id
+            LEFT JOIN FILM_DIRECTOR AS fd ON u.id = fd.film_id
+            LEFT JOIN directors AS d ON fd.director_id = d.id
+            WHERE u1f.FILM_ID IS NULL;
+            """;
 
     private static final String FIND_BY_ID_QUERY = FIND_ALL_QUERY +
             "WHERE u.id = ?";
@@ -131,7 +146,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     private final FilmWithGenresDirectorsExtractor extractor;
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresDirectorsExtractor extractor) {
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresDirectorsExtractor extractor, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         super(jdbc, mapper);
         this.extractor = extractor;
     }
@@ -241,6 +256,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         return findMany(FIND_COMMON_FILMS_QUERY, extractor, userId, friendId);
     }
 
+    @Override
     public List<Film> getRecommendedFilms(long userId) {
         Long matchUserId;
         String findMatchUserIdSql = "WITH UserLikes AS (" +
@@ -258,6 +274,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         } catch (DataAccessException e) {
             return new ArrayList<>();
         }
-        return jdbc.query(FIND_RECOMMENDED_FILMS, new Object[]{matchUserId, userId}, extractor);
+        return findMany(FIND_RECOMMENDED_FILMS, extractor, matchUserId, userId);
     }
 }
