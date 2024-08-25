@@ -1,11 +1,8 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmWithGenresDirectorsExtractor;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
@@ -85,20 +82,39 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                         d.name
                     """;
 
-    private static final String FIND_COMMON_FILMS_QUERY = BASE_SELECT_QUERY +
-            """
-                        COUNT(l3.user_id) AS like_count
-                    FROM films AS u
-                    JOIN FILM_LIKES AS l1 ON u.id = l1.film_id
-                    JOIN FILM_LIKES AS l2 ON u.id = l2.film_id
-                    LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
-                    LEFT JOIN genre AS g ON fg.genre_id = g.id
-                    LEFT JOIN FILM_LIKES AS l3 ON u.id = l3.film_id
-                    LEFT JOIN rating AS r ON u.rating = r.id
-                    WHERE l1.user_id = ? AND l2.user_id = ?
-                    GROUP BY u.id, r.name
-                    ORDER BY like_count DESC;
-                    """;
+    private static final String FIND_COMMON_FILMS_QUERY = """
+            WITH User1Films AS (
+                SELECT FILM_ID
+                FROM FILM_LIKES
+                WHERE USER_ID = ?
+            ),
+            User2Films AS (
+                SELECT FILM_ID
+                FROM FILM_LIKES
+                WHERE USER_ID = ?
+            )
+            SELECT u.ID AS film_id,
+                   u.NAME AS film_name,
+                   u.DESCRIPTION AS film_description,
+                   u.RELEASE_DATE AS film_release_date,
+                   u.DURATION AS film_duration,
+                   u.RATING AS film_rating_id,
+                   r.NAME AS film_rating_name,
+                   fg.GENRE_ID AS film_genre_id,
+                   g.NAME AS film_genre_name,
+                   fd.director_id AS film_director_id,
+                   d.name AS film_director_name
+            FROM FILMS u
+            JOIN User2Films u2f ON u.ID = u2f.FILM_ID
+            LEFT JOIN User1Films u1f ON u.ID = u1f.FILM_ID
+            LEFT JOIN FILM_GENRE AS fg ON u.id = fg.film_id
+            LEFT JOIN genre AS g ON fg.genre_id = g.id
+            LEFT JOIN FILM_LIKES AS fi ON u.id = fi.film_id
+            LEFT JOIN rating AS r ON u.rating = r.id
+            LEFT JOIN FILM_DIRECTOR AS fd ON u.id = fd.film_id
+            LEFT JOIN directors AS d ON fd.director_id = d.id
+            WHERE u1f.FILM_ID IS NOT NULL;
+            """;
 
     private static final String FIND_RECOMMENDED_FILMS = """
             WITH User2Films AS (
@@ -146,7 +162,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     private final FilmWithGenresDirectorsExtractor extractor;
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresDirectorsExtractor extractor, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresDirectorsExtractor extractor) {
         super(jdbc, mapper);
         this.extractor = extractor;
     }
@@ -193,6 +209,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     @Override
     public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
+
         StringBuilder query = new StringBuilder(FIND_POPULAR_FILMS);
         if (genreId != null || year != null) {
             query.append(" WHERE ");
@@ -215,16 +232,29 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                     u.duration,
                     u.rating,
                     r.name,
-                    fg.genre_id,
                     g.name,
                     fd.director_id,
                     d.name
                 ORDER BY like_count DESC""";
         query.append(groupAndOrderSql);
-        if (count == null ) {
-            return findMany(query.toString(), extractor);
+        List<Film> filmsWithoutGenres;
+        if (count == null) {
+            filmsWithoutGenres = findMany(query.toString(), extractor);
+        } else {
+            filmsWithoutGenres = findMany(query.toString(), extractor).stream().limit(count).toList();
         }
-        return findMany(query.toString(), extractor).stream().limit(count).toList();
+
+        // я не знаю как сделать это через sql >:(
+        List<Film> films = getAllFilms();
+        for (Film film : filmsWithoutGenres) {
+            for (Film film1 : films) {
+                if (film.getId() == film1.getId()) {
+                    film.setGenres(film1.getGenres());
+                    break;
+                }
+            }
+        }
+        return filmsWithoutGenres;
     }
 
     @Override

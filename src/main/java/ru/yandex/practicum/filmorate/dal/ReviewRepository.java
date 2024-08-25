@@ -12,22 +12,23 @@ import java.util.Optional;
 public class ReviewRepository extends BaseRepository<Review> implements ReviewStorage {
 
     private static final String INSERT_REVIEW = "INSERT INTO REVIEWS (content, is_positive," +
-                                                " user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
+            " user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
     private static final String FIND_ALL = "SELECT * FROM REVIEWS";
+    private static final String FIND_ALL_WITH_LIMIT = FIND_ALL + " ORDER BY useful DESC LIMIT ?";
     private static final String INSERT_REVIEWS_LIKE = "INSERT INTO REVIEWS_LIKES " +
-                                                      "(user_id, review_id, is_like) VALUES (?, ?, ?)";
+            "(user_id, review_id, is_like) VALUES (?, ?, ?)";
     private static final String UPDATE_REVIEWS_LIKES_ON_DISLIKE = "UPDATE REVIEWS_LIKES SET IS_LIKE = false " +
-                                                                  "where user_id = ? AND review_id = ?";
+            "where user_id = ? AND review_id = ?";
     private static final String UPDATE_REVIEW = "UPDATE REVIEWS SET content = ?, is_positive = ?, user_id = ?," +
-                                                " film_id = ?, useful = ? WHERE id = ?";
+            " film_id = ?, useful = ? WHERE id = ?";
     private static final String DELETE_REVIEW_LIKE = "DELETE FROM REVIEWS_LIKES WHERE " +
-                                                     "user_id = ? AND review_id = ? AND is_like = ?";
+            "user_id = ? AND review_id = ? AND is_like = ?";
     private static final String UPDATE_REVIEWS_INCREMENT_USEFUL = "UPDATE REVIEWS SET useful = useful + 1 WHERE id = ?";
-    private static final String UPDATE_REVIEWS_DECREMENT_USEFUL = "UPDATE REVIEWS SET useful = useful -1 WHERE id = ?";
-    private static final String ADD_DISLIKE_TO_REVIEW = "UPDATE REVIEWS SET useful = useful -2 WHERE id = ?";
+    private static final String UPDATE_REVIEWS_DECREMENT_USEFUL = "UPDATE REVIEWS SET useful = useful - 1 WHERE id = ?";
+    private static final String ADD_DISLIKE_TO_REVIEW = "UPDATE REVIEWS SET useful = useful -1 WHERE id = ?";
     private static final String DELETE_REVIEW = "DELETE FROM REVIEWS WHERE id = ?";
-    private static final String FIND_REVIEW_BY_ID = "SELECT * FROM REVIEWS WHERE id = ?";
-    private static final String FIND_ALL_FILMS_REVIEWS = "SELECT * FROM REVIEWS WHERE film_id = ? ORDER BY useful LIMIT ?";
+    private static final String FIND_REVIEW_BY_ID = FIND_ALL + " WHERE id = ?";
+    private static final String FIND_ALL_FILM_REVIEWS = FIND_ALL + " WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
 
     public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
         super(jdbc, mapper);
@@ -72,16 +73,17 @@ public class ReviewRepository extends BaseRepository<Review> implements ReviewSt
 
     @Override
     public List<Review> getAllReviews(long count) {
-        return findMany(FIND_ALL, count);
+        return findMany(FIND_ALL_WITH_LIMIT, count);
     }
 
     @Override
     public List<Review> getFilmsReviews(Long filmId, long count) {
-        return findMany(FIND_ALL_FILMS_REVIEWS, filmId, count);
+        return findMany(FIND_ALL_FILM_REVIEWS, filmId, count);
     }
 
     @Override
     public void addReviewLike(long id, long userId) {
+        deleteReviewDislike(id, userId);
         jdbc.update(INSERT_REVIEWS_LIKE,
                 userId,
                 id,
@@ -91,6 +93,7 @@ public class ReviewRepository extends BaseRepository<Review> implements ReviewSt
 
     @Override
     public void addReviewDislike(long id, long userId) {
+        deleteReviewLike(id, userId);
         jdbc.update(
                 UPDATE_REVIEWS_LIKES_ON_DISLIKE,
                 userId,
