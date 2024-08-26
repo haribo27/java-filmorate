@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -242,18 +243,31 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 """;
         query.append(groupAndOrderSql);
 
-        List<Film> films = namedParameterJdbcTemplate.query(query.toString(), params, extractor);
+        if (count != null) {
+            query.append("LIMIT :count ");
+            params.addValue("count", count);
+        }
+
+        List<Long> filmIds = namedParameterJdbcTemplate.query(query.toString(), params,
+                (rs, rowNum) -> rs.getLong("film_id"));
+
+        if (filmIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String filmQuery = FIND_ALL_QUERY + " WHERE u.id IN (:filmIds)";
+
+        MapSqlParameterSource filmParams = new MapSqlParameterSource();
+        filmParams.addValue("filmIds", filmIds);
+
+        List<Film> films = namedParameterJdbcTemplate.query(filmQuery, filmParams, extractor);
 
         if (count != null) {
             assert films != null;
             films = films.stream().limit(count).toList();
         }
-        assert films != null;
-        return films.stream()
-                .map(film -> findById(film.getId()).orElseThrow())
-                .toList();
+        return films;
     }
-
 
     @Override
     public Optional<Film> findById(long id) {
