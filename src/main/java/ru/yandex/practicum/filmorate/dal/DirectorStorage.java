@@ -10,16 +10,12 @@ public interface DirectorStorage {
 
     Director createDirector(Director director);
 
-    Director updateDirector(Director director);
+    void updateDirector(Director director);
 
     void deleteDirector(long id);
 
     List<Director> getAllDirector();
 
     Optional<Director> findById(long id);
-
-    Collection<Director> findAllByFilmId(Long id);
-
-    void insertIntoFilmDirector(long id, long directorId);
 }
 

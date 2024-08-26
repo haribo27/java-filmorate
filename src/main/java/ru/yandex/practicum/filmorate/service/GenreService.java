@@ -58,7 +58,7 @@ public class GenreService {
 
     public void updateGenres(long filmId, List<Genre> genre) {
         filmGenreRepository.deleteFilmsGenre(filmId);
-        saveFilmsGenres(filmId,genre);
+        saveFilmsGenres(filmId, genre);
     }
 
 }

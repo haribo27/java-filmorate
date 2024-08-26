@@ -14,17 +14,17 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
     private static final String FIND_ALL_QUERY = "SELECT * FROM users";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE id = ?";
     private static final String INSERT_QUERY = "INSERT INTO users (email, name, login , birthday)" +
-                                               "VALUES (?, ?, ?, ?)";
+            "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, name = ?," +
-                                               " login = ?, birthday = ? WHERE id = ?";
+            " login = ?, birthday = ? WHERE id = ?";
 
     private static final String DELETE_QUERY = "DELETE FROM users WHERE id = ?";
 
     private static final String INSERT_QUERY_FRIEND = "INSERT INTO friends (user_id, friend_id)" +
-                                                      "VALUES (?, ?)";
+            "VALUES (?, ?)";
 
     private static final String FIND_FRIENDS = "SELECT u.* FROM users AS u " +
-                                               "JOIN friends AS f ON u.id = f.friend_id WHERE f.user_id = ?";
+            "JOIN friends AS f ON u.id = f.friend_id WHERE f.user_id = ?";
 
     private static final String DELETE_QUERY_FRIEND = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
     private static final String FIND_COMMON_FRIENDS = """

@@ -25,7 +25,6 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
     private final UserService userService;
-
     private long currentId;
 
     public ReviewService(ReviewRepository reviewRepository,
@@ -62,17 +61,15 @@ public class ReviewService {
                 .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
         reviewRepository.updateReview(updatedReview);
         userService.addEvent(updatedReview.getUserId(), EventTypeFeed.REVIEW, OperationFeed.UPDATE, updatedReview.getId());
-
         log.info("Updated review {}", updatedReview);
-
         return ReviewMapper.mapToReviewDto(updatedReview);
     }
 
     public void deleteReview(long id) {
         log.info("Deleting review with id {}", id);
-        Review review = reviewRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
-
-
+        Review review = reviewRepository
+                .findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
         userService.addEvent(review.getUserId(), EventTypeFeed.REVIEW, OperationFeed.REMOVE, id);
         if (reviewRepository.deleteReview(id)) {
             log.info("Review deleted");

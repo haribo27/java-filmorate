@@ -42,13 +42,12 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
     }
 
     @Override
-    public Director updateDirector(Director director) {
+    public void updateDirector(Director director) {
         update(
                 UPDATE_QUERY,
                 director.getName(),
                 director.getId()
         );
-        return director;
     }
 
     @Override

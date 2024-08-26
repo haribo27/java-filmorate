@@ -40,6 +40,6 @@ public class FilmGenreRepository extends BaseRepository<Genre> implements FilmGe
     }
 
     public void deleteFilmsGenre(long filmId) {
-        delete(DELETE_QUERY,filmId);
+        delete(DELETE_QUERY, filmId);
     }
 }

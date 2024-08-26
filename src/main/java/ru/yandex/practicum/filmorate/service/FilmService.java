@@ -2,8 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.FilmDirectorRepository;
-import ru.yandex.practicum.filmorate.dal.FilmGenreRepository;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.filmRequest.NewFilmRequest;
@@ -21,15 +19,14 @@ import java.util.List;
 public class FilmService {
 
     private final FilmStorage filmRepository;
-    private final FilmGenreRepository filmGenreRepository;
     private final UserService userService;
     private final MpaService mpaService;
     private final GenreService genreService;
     private final DirectorService directorService;
 
-    public FilmService(FilmStorage filmRepository, FilmGenreRepository filmGenreRepository, FilmDirectorRepository filmDirectorRepository, UserService userService, MpaService mpaService, GenreService genreService, DirectorService directorService) {
+    public FilmService(FilmStorage filmRepository, UserService userService, MpaService mpaService,
+                       GenreService genreService, DirectorService directorService) {
         this.filmRepository = filmRepository;
-        this.filmGenreRepository = filmGenreRepository;
         this.userService = userService;
         this.mpaService = mpaService;
         this.genreService = genreService;
@@ -146,9 +143,10 @@ public class FilmService {
     }
 
     public List<FilmDto> search(String query, List<String> by) {
-        return filmRepository.searchFilmsByParams(query,by)
+        return filmRepository.searchFilmsByParams(query, by)
                 .stream()
                 .map(FilmMapper::mapToFilmDto)
-                .toList();
+                .toList()
+                .reversed();
     }
 }

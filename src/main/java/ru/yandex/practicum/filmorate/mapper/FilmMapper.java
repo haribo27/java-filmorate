@@ -21,11 +21,6 @@ public class FilmMapper {
         film.setMpa(request.getMpa());
         film.setGenres(request.getGenres());
         film.setDirectors(request.getDirectors());
-//        if (request.getDirectors() == null) {
-//            film.setDirectors(Set.of());
-//        } else {
-//            film.setDirectors(request.getDirectors());
-//        }
         return film;
     }
 

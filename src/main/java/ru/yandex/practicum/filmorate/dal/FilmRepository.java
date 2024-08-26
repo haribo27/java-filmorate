@@ -3,10 +3,11 @@ package ru.yandex.practicum.filmorate.dal;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmWithGenresDirectorsExtractor;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.ArrayList;
@@ -163,10 +164,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private final FilmWithGenresDirectorsExtractor extractor;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresDirectorsExtractor extractor) {
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, FilmWithGenresDirectorsExtractor extractor, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         super(jdbc, mapper);
         this.extractor = extractor;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate1;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     @Override
@@ -194,10 +195,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                 film.getMpa().getId(),
                 film.getId()
         );
-        delete("DELETE FROM film_director WHERE film_id = ?", film.getId());
-        for (Director director : film.getDirectors()) {
-            update("INSERT INTO FILM_DIRECTOR (film_id, director_id) VALUES (?,?)", film.getId(), director.getId());
-        }
     }
 
     @Override
@@ -212,21 +209,23 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
 
-        StringBuilder query = new StringBuilder(FIND_POPULAR_FILMS);
-        if (genreId != null || year != null) {
-            query.append(" WHERE ");
-            if (genreId != null) {
-                query.append("fg.genre_id = ").append(genreId);
-            }
-            if (year != null) {
-                if (genreId != null) {
-                    query.append(" AND ");
-                }
-                query.append("u.release_date LIKE ").append("'%").append(year).append("%'");
-            }
+        StringBuilder query = new StringBuilder(FIND_POPULAR_FILMS)
+                .append(" WHERE 1=1 ");
+
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+        if (genreId != null) {
+            query.append("AND fg.genre_id = :genreId ");
+            params.addValue("genreId", genreId);
         }
+
+        if (year != null) {
+            query.append("AND EXTRACT(YEAR FROM u.release_date) = :year ");
+            params.addValue("year", year);
+        }
+
         String groupAndOrderSql = """
-                    GROUP BY
+                GROUP BY
                     u.id,
                     u.name,
                     u.description,
@@ -234,30 +233,26 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                     u.duration,
                     u.rating,
                     r.name,
+                    fg.genre_id,
                     g.name,
                     fd.director_id,
                     d.name
-                ORDER BY like_count DESC""";
+                ORDER BY like_count DESC
+                """;
         query.append(groupAndOrderSql);
-        List<Film> filmsWithoutGenres;
-        if (count == null) {
-            filmsWithoutGenres = findMany(query.toString(), extractor);
-        } else {
-            filmsWithoutGenres = findMany(query.toString(), extractor).stream().limit(count).toList();
-        }
 
-        // я не знаю как сделать это через sql >:(
-        List<Film> films = getAllFilms();
-        for (Film film : filmsWithoutGenres) {
-            for (Film film1 : films) {
-                if (film.getId() == film1.getId()) {
-                    film.setGenres(film1.getGenres());
-                    break;
-                }
-            }
+        List<Film> films = namedParameterJdbcTemplate.query(query.toString(), params, extractor);
+
+        if (count != null) {
+            assert films != null;
+            films = films.stream().limit(count).toList();
         }
-        return filmsWithoutGenres;
+        assert films != null;
+        return films.stream()
+                .map(film -> findById(film.getId()).orElseThrow())
+                .toList();
     }
+
 
     @Override
     public Optional<Film> findById(long id) {
@@ -310,24 +305,35 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     public List<Film> searchFilmsByParams(String query, List<String> by) {
-        // Определите базовый запрос
-        StringBuilder sql = new StringBuilder(FIND_ALL_QUERY);
-                //.append(" WHERE 1=1 ");
+        StringBuilder sql = new StringBuilder(FIND_ALL_QUERY)
+                .append(" WHERE 1=1 ");
 
-        // Список для хранения параметров запроса
-        List<Object> params = new ArrayList<>();
+        MapSqlParameterSource params = new MapSqlParameterSource();
 
-        // Добавьте условия к запросу на основе параметров в списке by
+        boolean hasTitleCondition = false;
+        boolean hasDirectorCondition = false;
+
         if (by.contains("title")) {
-            sql.append(" WHERE u.NAME LIKE ?;");
-            params.add("'%" + query + "%'");
+            sql.append(" AND LOWER(u.NAME) LIKE :titleQuery ");
+            params.addValue("titleQuery", "%" + query.toLowerCase() + "%");
+            hasTitleCondition = true;
         }
         if (by.contains("director")) {
-            sql.append(" AND d.name LIKE ? ");
-            params.add("%" + query + "%");
+            if (hasTitleCondition) {
+                sql.append(" OR LOWER(d.name) LIKE :directorQuery ");
+            } else {
+                sql.append(" AND LOWER(d.name) LIKE :directorQuery ");
+            }
+            params.addValue("directorQuery", "%" + query.toLowerCase() + "%");
+            hasDirectorCondition = true;
         }
 
-        List<Film> list =findMany(sql.toString(), extractor, params.get(0));
-        return findMany(sql.toString(), extractor, params.get(0));
+        if (!hasTitleCondition && !hasDirectorCondition) {
+            throw new IllegalArgumentException("At least one search parameter (title or director) must be provided.");
+        }
+
+        return namedParameterJdbcTemplate.query(sql.toString(), params, extractor);
     }
+
+
 }

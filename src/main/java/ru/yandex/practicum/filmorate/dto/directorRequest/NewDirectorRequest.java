@@ -13,8 +13,4 @@ public class NewDirectorRequest {
     @NotBlank
     @Size(max = 100)
     private String name;
-
-    public boolean hasName() {
-        return name.isBlank() || name.isEmpty();
-    }
 }
