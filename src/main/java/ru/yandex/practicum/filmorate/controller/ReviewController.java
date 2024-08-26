@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.dto.reviewRequest.NewReviewRequest;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/reviews")
+@Validated
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -40,13 +43,14 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<ReviewDto> getAllFilmsReviews(@RequestParam(value = "count", required = false, defaultValue = "10") long count) {
+    public List<ReviewDto> getAllFilmsReviews(@RequestParam(value = "count", defaultValue = "10") @Positive long count) {
         return reviewService.getAllFilmsReviews(count);
     }
 
     @GetMapping(params = {"filmId"})
-    public List<ReviewDto> getFilmReviewsById(@RequestParam(value = "filmId") Long filmId,
-                                              @RequestParam(value = "count", required = false, defaultValue = "10") long count) {
+    public List<ReviewDto> getFilmReviewsById(@RequestParam(value = "filmId") @Positive Long filmId,
+                                              @RequestParam(value = "count", defaultValue = "10")
+                                              @Positive long count) {
         return reviewService.getFilmReviewsById(filmId, count);
     }
 

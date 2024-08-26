@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -40,7 +41,7 @@ public class FilmController {
     public Collection<Film> getPopularFilms(
             @RequestParam(value = "count", required = false) @Positive Integer count,
             @RequestParam(value = "genreId", required = false) @Positive Long genreId,
-            @RequestParam(value = "year", required = false) @Positive Integer year) {
+            @RequestParam(value = "year", required = false) @Min(1895) @Positive Integer year) {
         return filmService.getPopularFilms(count, genreId, year);
     }
 

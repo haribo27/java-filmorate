@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FilmStorage;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class FilmService {
 
     private final FilmStorage filmRepository;
@@ -23,15 +25,6 @@ public class FilmService {
     private final MpaService mpaService;
     private final GenreService genreService;
     private final DirectorService directorService;
-
-    public FilmService(FilmStorage filmRepository, UserService userService, MpaService mpaService,
-                       GenreService genreService, DirectorService directorService) {
-        this.filmRepository = filmRepository;
-        this.userService = userService;
-        this.mpaService = mpaService;
-        this.genreService = genreService;
-        this.directorService = directorService;
-    }
 
     public List<FilmDto> getRecommendedFilms(long userId) {
         log.info("Getting recommended films to user {}", userId);
@@ -102,7 +95,9 @@ public class FilmService {
         userService.addEvent(userId, EventTypeFeed.LIKE, OperationFeed.ADD, filmId);
         isFilmExist(filmId);
         userService.getUserOrException(userId);
-        filmRepository.addFilmLike(userId, filmId);
+        if (!filmRepository.isLikeExist(userId,filmId)) {
+            filmRepository.addFilmLike(userId, filmId);
+             }
         log.info("Added like with id: {}, user id {}", filmId, userId);
 
     }

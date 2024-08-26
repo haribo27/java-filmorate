@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FilmRepository;
@@ -19,23 +20,13 @@ import java.util.List;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final FilmRepository filmRepository;
     private final UserService userService;
-    private long currentId;
-
-    public ReviewService(ReviewRepository reviewRepository,
-                         UserRepository userRepository,
-                         FilmRepository filmRepository,
-                         UserService userService) {
-        this.reviewRepository = reviewRepository;
-        this.userRepository = userRepository;
-        this.filmRepository = filmRepository;
-        this.userService = userService;
-    }
 
     public ReviewDto saveReview(NewReviewRequest request) {
         log.info("Saving new Review {}", request);
@@ -80,11 +71,6 @@ public class ReviewService {
     }
 
     public ReviewDto findById(String id) {
-        if (id == null || id.equals("null")) {
-            return reviewRepository.findById(currentId)
-                    .map(ReviewMapper::mapToReviewDto)
-                    .orElseThrow(() -> new EntityNotFoundException("Отзыв с таким айди не найден"));
-        }
         log.info("Finding Review by id {}", id);
         return reviewRepository.findById(Long.parseLong(id))
                 .map(ReviewMapper::mapToReviewDto)

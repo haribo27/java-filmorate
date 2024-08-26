@@ -29,13 +29,11 @@ public class UserController {
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public UserDto getUser(@PathVariable long id) {
         return userService.getUserOrException(id);
     }
@@ -77,13 +75,11 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}/friends/{friendId}")
-    @ResponseStatus(HttpStatus.OK)
     public void deleteFriend(@PathVariable long userId, @PathVariable() long friendId) {
         userService.deleteFriend(userId, friendId);
     }
 
     @GetMapping("/{id}/recommendations")
-    @ResponseStatus(HttpStatus.OK)
     public List<FilmDto> getRecommendations(@PathVariable long id) {
         return filmService.getRecommendedFilms(id);
     }

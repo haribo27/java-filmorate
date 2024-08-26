@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.MpaRepository;
@@ -13,13 +14,10 @@ import java.util.List;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class MpaService {
 
     private final MpaRepository mpaRepository;
-
-    public MpaService(MpaRepository mpaRepository) {
-        this.mpaRepository = mpaRepository;
-    }
 
     public List<MpaDto> getAllMpa() {
         log.info("Get all ratings");
@@ -47,7 +45,4 @@ public class MpaService {
                 .orElseThrow(() -> new ValidationException("Рейтинга с таким айди не существует"));
     }
 
-    public void updateMpa(long id, Mpa mpa) {
-
-    }
 }

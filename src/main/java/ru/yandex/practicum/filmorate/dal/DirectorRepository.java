@@ -11,16 +11,7 @@ import java.util.Optional;
 @Repository("DirectorRepo")
 public class DirectorRepository extends BaseRepository<Director> implements DirectorStorage {
 
-    private static final String FIND_ALL_QUERY_BY_FILM_ID = """
-            SELECT
-            d.id AS director_id,
-            d.name AS director_name
-            FROM directors d
-            JOIN film_director fd ON d.id = fd.director_id
-            WHERE film_id = ? ORDER BY d.id
-            """;
     private static final String FIND_ALL_QUERY = "SELECT * FROM directors ORDER BY id";
-    private static final String INSERT_FILM = "INSERT INTO film_director (film_id, director_id) VALUES(?,?)";
     private static final String GET_BY_ID = "SELECT * FROM directors WHERE id = ?";
     private static final String UPDATE_QUERY = "UPDATE directors SET name = ? WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM directors WHERE id = ?";

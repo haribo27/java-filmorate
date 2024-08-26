@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 public class NewReviewRequest {
 
-    @NotNull
     @NotBlank
     @Size(max = 5000)
     private String content;

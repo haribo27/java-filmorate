@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.EventFeedStorage;
 import ru.yandex.practicum.filmorate.dal.UserStorage;
@@ -23,15 +23,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userRepository;
     private final EventFeedStorage eventFeedRepository;
-
-    public UserService(@Qualifier("UserRepo") UserStorage userRepository, @Qualifier("EventFeedRepo") EventFeedStorage eventFeedRepository) {
-        this.userRepository = userRepository;
-        this.eventFeedRepository = eventFeedRepository;
-    }
 
     public UserDto createUser(NewUserRequest request) {
         log.trace("Create user: {}", request);

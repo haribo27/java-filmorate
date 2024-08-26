@@ -1,10 +1,13 @@
 package ru.yandex.practicum.filmorate.mapper;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.dto.reviewRequest.NewReviewRequest;
 import ru.yandex.practicum.filmorate.dto.reviewRequest.UpdateReviewRequest;
 import ru.yandex.practicum.filmorate.model.Review;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ReviewMapper {
 
     public static Review mapToReview(NewReviewRequest request) {

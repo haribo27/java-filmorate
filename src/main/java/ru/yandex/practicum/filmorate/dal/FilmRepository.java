@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -262,6 +263,21 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public void addFilmLike(long userId, long filmId) {
         update(INSERT_FILM_LIKE, userId, filmId);
+    }
+
+    @Override
+    public boolean isLikeExist(long userId, long filmId) {
+        try {
+            String res = jdbc.queryForObject(
+                    "SELECT FILM_ID FROM FILM_LIKES WHERE USER_ID = ? AND FILM_ID = ?",
+                    String.class,
+                    userId,
+                    filmId
+            );
+            return res != null && !res.isBlank();
+        } catch (EmptyResultDataAccessException e) {
+            return false;
+        }
     }
 
     @Override

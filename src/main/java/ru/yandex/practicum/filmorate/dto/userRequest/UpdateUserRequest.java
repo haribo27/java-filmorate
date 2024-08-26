@@ -8,7 +8,6 @@ import java.time.LocalDate;
 @Data
 public class UpdateUserRequest {
 
-    @NotNull
     private long id;
     @Email
     @Size(max = 100)

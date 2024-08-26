@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FilmGenreRepository;
@@ -15,15 +16,11 @@ import java.util.Set;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class GenreService {
 
     private final GenreRepository genreRepository;
     private final FilmGenreRepository filmGenreRepository;
-
-    public GenreService(GenreRepository genreRepository, FilmGenreRepository filmGenreRepository) {
-        this.genreRepository = genreRepository;
-        this.filmGenreRepository = filmGenreRepository;
-    }
 
     public List<GenreDto> getAllGenres() {
         log.info("Get all genres");
