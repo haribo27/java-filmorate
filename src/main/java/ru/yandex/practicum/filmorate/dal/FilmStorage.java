@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.dal;
 
-import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
