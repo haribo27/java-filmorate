@@ -64,14 +64,4 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
     public Optional<Director> findById(long id) {
         return findOne(GET_BY_ID, id);
     }
-
-    @Override
-    public Collection<Director> findAllByFilmId(Long id) {
-        return findMany(FIND_ALL_QUERY_BY_FILM_ID, id);
-    }
-
-    @Override
-    public void insertIntoFilmDirector(long filmId, long directorId) {
-        add(INSERT_FILM, filmId, directorId);
-    }
 }
