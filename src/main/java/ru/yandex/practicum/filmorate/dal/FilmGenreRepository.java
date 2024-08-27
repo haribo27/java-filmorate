@@ -11,17 +11,19 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Repository
-public class FilmGenreRepository extends BaseRepository<Genre> {
+public class FilmGenreRepository extends BaseRepository<Genre> implements FilmGenreStorage {
 
     private static final String INSERT_QUERY = "INSERT INTO FILM_GENRE (film_id,genre_id) VALUES (?,?)";
+    private static final String DELETE_QUERY = "DELETE FROM FILM_GENRE WHERE film_id = ?";
 
     public FilmGenreRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper);
     }
 
 
-    public int[] saveGenre(long filmId, List<Genre> genres) {
-        return this.jdbc.batchUpdate(
+    @Override
+    public void saveFilmsGenre(long filmId, List<Genre> genres) {
+        this.jdbc.batchUpdate(
                 INSERT_QUERY,
                 new BatchPreparedStatementSetter() {
                     @Override
@@ -35,5 +37,9 @@ public class FilmGenreRepository extends BaseRepository<Genre> {
                         return genres.size();
                     }
                 });
+    }
+
+    public void deleteFilmsGenre(long filmId) {
+        delete(DELETE_QUERY, filmId);
     }
 }

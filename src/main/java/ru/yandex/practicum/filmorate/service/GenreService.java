@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FilmGenreRepository;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
@@ -14,13 +16,11 @@ import java.util.Set;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class GenreService {
 
     private final GenreRepository genreRepository;
-
-    public GenreService(GenreRepository genreRepository) {
-        this.genreRepository = genreRepository;
-    }
+    private final FilmGenreRepository filmGenreRepository;
 
     public List<GenreDto> getAllGenres() {
         log.info("Get all genres");
@@ -37,7 +37,7 @@ public class GenreService {
                 .orElseThrow(() -> new EntityNotFoundException("Жанра с таким id не существует"));
     }
 
-    public void isGenresExists(Set<Genre> genres) {
+    public void isGenresExists(Set<GenreDto> genres) {
         if (genres == null) return;
         log.info("Check if genres exists: {}", genres);
         try {
@@ -46,4 +46,16 @@ public class GenreService {
             throw new ValidationException("Жанра с таким айди не существует");
         }
     }
+
+    public void saveFilmsGenres(long filmId, List<Genre> genres) {
+        if (genres != null && !genres.isEmpty()) {
+            filmGenreRepository.saveFilmsGenre(filmId, genres);
+        }
+    }
+
+    public void updateGenres(long filmId, List<Genre> genre) {
+        filmGenreRepository.deleteFilmsGenre(filmId);
+        saveFilmsGenres(filmId, genre);
+    }
+
 }

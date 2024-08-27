@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.MpaRepository;
@@ -7,18 +8,16 @@ import ru.yandex.practicum.filmorate.dto.MpaDto;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.MpaMapper;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class MpaService {
 
     private final MpaRepository mpaRepository;
-
-    public MpaService(MpaRepository mpaRepository) {
-        this.mpaRepository = mpaRepository;
-    }
 
     public List<MpaDto> getAllMpa() {
         log.info("Get all ratings");
@@ -35,9 +34,15 @@ public class MpaService {
                 .orElseThrow(() -> new EntityNotFoundException("Рейтинг с таким id не найден"));
     }
 
+    public Mpa get(int id) {
+        return mpaRepository.getMpaById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Рейтинг с id=%d не найден", id)));
+    }
+
     public void isMpaExist(long id) {
         log.info("Check if ratings exist with id: {}", id);
         mpaRepository.getMpaById(id)
                 .orElseThrow(() -> new ValidationException("Рейтинга с таким айди не существует"));
     }
+
 }

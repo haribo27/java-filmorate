@@ -97,7 +97,7 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
 
     @Override
     public List<User> getCommonFriends(long userId, long otherId) {
-        return findMany(FIND_COMMON_FRIENDS,userId,otherId);
+        return findMany(FIND_COMMON_FRIENDS, userId, otherId);
     }
 
     public int deleteFriend(long userId, long friendId) {

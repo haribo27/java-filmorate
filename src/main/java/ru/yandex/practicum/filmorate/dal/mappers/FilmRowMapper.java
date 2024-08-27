@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dal.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -10,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Component
 public class FilmRowMapper implements RowMapper<Film> {
@@ -27,7 +29,9 @@ public class FilmRowMapper implements RowMapper<Film> {
         mpa.setName(rs.getString("film_rating_name"));
         film.setMpa(mpa);
 
-        Set<Genre> genres = new HashSet<>();
+        Set<Genre> genres = new TreeSet<>();
+        Set<Director> directors = new HashSet<>();
+
         do {
             long genreId = rs.getLong("film_genre_id");
             if (genreId > 0) {
@@ -36,8 +40,19 @@ public class FilmRowMapper implements RowMapper<Film> {
                 genre.setName(rs.getString("film_genre_name"));
                 genres.add(genre);
             }
+
+            long directorId = rs.getLong("film_director_id");
+            if (directorId > 0) {
+                Director director = new Director();
+                director.setId(rs.getLong("film_director_id"));
+                director.setName(rs.getString("film_director_name"));
+                directors.add(director);
+            }
         } while (rs.next() && rs.getLong("film_id") == film.getId());
+
         film.setGenres(genres);
+        film.setDirectors(directors);
+
         return film;
     }
 }
