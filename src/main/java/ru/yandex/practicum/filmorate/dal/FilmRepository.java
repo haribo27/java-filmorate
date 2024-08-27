@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmWithGenresDirectorsExtractor;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SortBy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -300,11 +301,11 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     }
 
     @Override
-    public List<Film> getDirectorFilms(Long id, String sortBy) {
+    public List<Film> getDirectorFilms(Long id, SortBy sortBy) {
         return switch (sortBy) {
-            case "likes" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY like_count DESC", extractor, id);
-            case "year" -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY film_release_date", extractor, id);
-            default -> throw new EntityNotFoundException(String.format("Sored by %s not exist", sortBy));
+            case LIKES -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY like_count DESC", extractor, id);
+            case YEAR -> findMany(SELECT_ALL_DIRECTOR_FILM_BY + "ORDER BY film_release_date", extractor, id);
+            default -> throw new EntityNotFoundException(String.format("Sorted by %s not exist", sortBy));
         };
     }
 

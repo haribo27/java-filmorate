@@ -15,6 +15,13 @@ public class DirectorMapper {
         return director;
     }
 
+    public static Director mapDirecorDtoToDirector(DirectorDto dto) {
+        Director director = new Director();
+        director.setId(dto.getId());
+        director.setName(dto.getName());
+        return director;
+    }
+
     public static DirectorDto mapToDirectorDto(Director director) {
         DirectorDto directorDto = new DirectorDto();
         directorDto.setId(director.getId());

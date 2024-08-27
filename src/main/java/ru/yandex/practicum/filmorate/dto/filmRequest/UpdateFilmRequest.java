@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.dto.DirectorDto;
+import ru.yandex.practicum.filmorate.dto.GenreDto;
+import ru.yandex.practicum.filmorate.dto.MpaDto;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -29,10 +32,10 @@ public class UpdateFilmRequest {
     @Positive
     @NotNull
     private Integer duration;
-    private Set<Genre> genres;
+    private Set<GenreDto> genres;
     @NotNull
-    private Mpa mpa;
-    private Set<Director> directors;
+    private MpaDto mpa;
+    private Set<DirectorDto> directors;
 
     public boolean hasName() {
         return name.isBlank() || name.isEmpty();

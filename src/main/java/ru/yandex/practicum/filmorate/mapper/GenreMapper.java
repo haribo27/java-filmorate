@@ -15,4 +15,10 @@ public class GenreMapper {
         return dto;
     }
 
+    public static Genre mapToGenre(GenreDto genreDto) {
+        Genre genre = new Genre();
+        genre.setId(genreDto.getId());
+        genre.setName(genreDto.getName());
+        return genre;
+    }
 }

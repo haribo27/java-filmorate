@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.EventTypeFeed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.OperationFeed;
+import ru.yandex.practicum.filmorate.model.SortBy;
 
 import java.util.List;
 
@@ -95,9 +96,9 @@ public class FilmService {
         userService.addEvent(userId, EventTypeFeed.LIKE, OperationFeed.ADD, filmId);
         isFilmExist(filmId);
         userService.getUserOrException(userId);
-        if (!filmRepository.isLikeExist(userId,filmId)) {
+        if (!filmRepository.isLikeExist(userId, filmId)) {
             filmRepository.addFilmLike(userId, filmId);
-             }
+        }
         log.info("Added like with id: {}, user id {}", filmId, userId);
 
     }
@@ -129,7 +130,7 @@ public class FilmService {
                 .orElseThrow(() -> new EntityNotFoundException("Фильм в данным айди не найден"));
     }
 
-    public List<FilmDto> getDirectorFilms(Long id, String sortBy) {
+    public List<FilmDto> getDirectorFilms(Long id, SortBy sortBy) {
         directorService.isDirectorExist(id);
         return filmRepository.getDirectorFilms(id, sortBy)
                 .stream()

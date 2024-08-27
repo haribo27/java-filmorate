@@ -16,7 +16,7 @@ public class FilmDto {
     private String description;
     private LocalDate releaseDate;
     private int duration;
-    private Set<Genre> genres;
-    private Mpa mpa;
-    private Set<Director> directors;
+    private Set<GenreDto> genres;
+    private MpaDto mpa;
+    private Set<DirectorDto> directors;
 }

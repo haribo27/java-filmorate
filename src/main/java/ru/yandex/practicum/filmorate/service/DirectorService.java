@@ -74,7 +74,7 @@ public class DirectorService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Директор с таким id=%d не существует", id)));
     }
 
-    public void isDirectorExist(Set<Director> directors) {
+    public void isDirectorExist(Set<DirectorDto> directors) {
         if (directors == null) return;
         log.info("Check if directors exists: {}", directors);
         try {

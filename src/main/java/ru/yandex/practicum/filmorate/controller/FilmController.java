@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.filmRequest.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.filmRequest.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.SortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
@@ -84,6 +85,6 @@ public class FilmController {
     @GetMapping("/director/{directorId}")
     public List<FilmDto> getDirectorFilms(@PathVariable("directorId") final Long id,
                                           @RequestParam final String sortBy) {
-        return filmService.getDirectorFilms(id, sortBy);
+        return filmService.getDirectorFilms(id, SortBy.fromValue(sortBy));
     }
 }

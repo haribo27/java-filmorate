@@ -37,7 +37,7 @@ public class GenreService {
                 .orElseThrow(() -> new EntityNotFoundException("Жанра с таким id не существует"));
     }
 
-    public void isGenresExists(Set<Genre> genres) {
+    public void isGenresExists(Set<GenreDto> genres) {
         if (genres == null) return;
         log.info("Check if genres exists: {}", genres);
         try {
